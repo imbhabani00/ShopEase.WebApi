@@ -1,0 +1,6 @@
+@ShopEase.WebApi_HostAddress = http://localhost:5067
+
+GET {{ShopEase.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
