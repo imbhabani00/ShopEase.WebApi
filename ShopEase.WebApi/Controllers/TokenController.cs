@@ -24,7 +24,7 @@ namespace Ecommerce.Api.Controllers
         private readonly JwtSettings _jwtSettings;
         #endregion
 
-        #region TokenController
+        #region Constructor
         public TokenController(
             ITokenService tokenService,
             IUserService userService,
