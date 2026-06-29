@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Ecommerce.Application.DTOs.Response.User;
 using Ecommerce.Domain.Models;
+using ShopEase.Application.DTOs.Response;
+using ShopEase.Domain.Models;
 
 namespace Ecommerce.Application.Mapper
 {
@@ -10,6 +12,7 @@ namespace Ecommerce.Application.Mapper
         {
             CreateMap<User , UserResponse>();
             CreateMap<UserGet, UserGetResponse>();
+            CreateMap<SaveResponse, GenericSaveResponse>();
         }
     }
 }

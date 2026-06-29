@@ -10,9 +10,10 @@ namespace Ecommerce.Api.Helper
             return claim != null && Guid.TryParse(claim.Value, out var id) ? id : null;
         }
 
-        public static string? GetTenantId(this ClaimsPrincipal user)
+        public static int GetTenantId(this ClaimsPrincipal user)
         {
-            return user.FindFirst("http://schemas.microsoft.com/identity/claims/tenantid")?.Value;
+            var tenantId = user.FindFirst("http://schemas.microsoft.com/identity/claims/tenantid")?.Value;
+            return int.TryParse(tenantId, out var id) ? id : 0;
         }
 
         public static string? GetUserEmail(this ClaimsPrincipal user)

@@ -15,8 +15,7 @@ namespace Ecommerce.Api.Controllers
         public int AppCode { get; set; }
         public string? RoleCode { get; set; }
         public int RoleId { get; set; }
-
-        protected Guid? CurrentUserId => User.GetUserId();
+        protected int? CurrentUserId => User.GetUserId().HasValue? User.GetUserId().GetHashCode(): null;
         protected string? CurrentUserEmail => User.GetUserEmail();
         protected string? CurrentUserRole => User.GetUserRole();
 

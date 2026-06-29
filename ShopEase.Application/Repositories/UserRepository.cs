@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Ecommerce.Domain.Models;
 using Microsoft.Extensions.Configuration;
+using ShopEase.Domain.Models;
 using System.Data;
 
 namespace Ecommerce.Application.Repositories
@@ -10,7 +11,8 @@ namespace Ecommerce.Application.Repositories
     {
         Task<UserGet?> Authenticate(string email, string password);
         Task<UserGet?> GetById(int userId);
-        Task UpdateRefreshToken(int userId, string refreshToken , DateTime refreshTokenExpiry);
+        Task UpdateRefreshToken(int userId, string refreshToken, DateTime refreshTokenExpiry);
+        Task<SaveResponse> Save(Register register, int tenantId, int loggedInUserId);
     }
     #endregion
 
@@ -71,6 +73,38 @@ namespace Ecommerce.Application.Repositories
                 var returnValue = parameters.Get<int>("@ReturnValue");
                 return user;
             }
+        }
+        #endregion
+
+        #region Save
+        public async Task<SaveResponse> Save(Register register, int tenantId, int loggedInUserId)
+        {
+            var response = new SaveResponse();
+            using (var connection = CreateConnection())
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@UserId", register.UserId);
+                parameters.Add("@TenantId", tenantId);
+                parameters.Add("@LoggedInUserId", loggedInUserId);
+                parameters.Add("@FirstName", register.FirstName);
+                parameters.Add("@MiddleName", register.MiddleName);
+                parameters.Add("@LastName", register.LastName);
+                parameters.Add("@Email", register.Email);
+                parameters.Add("@PhoneNumber", register.PhoneNumber);
+                parameters.Add("@PasswordHash", register.PasswordHash);
+                parameters.Add("@RoleId", register.RoleId);
+                parameters.Add("@IsActive", register.IsActive);
+                parameters.Add("@NewUserId", dbType: DbType.Int32, direction: ParameterDirection.Output);
+                parameters.Add("@ReturnValue", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
+                connection.Open();
+                await connection.ExecuteAsync("[dbo].[Users_Save]", parameters, commandType: CommandType.StoredProcedure);
+                response.ReturnValue = parameters.Get<int>("@ReturnValue");
+                if (response.ReturnValue == 0)
+                {
+                    response.NewId = parameters.Get<int>("@NewUserId");
+                }
+            }
+            return response;
         }
         #endregion
     }

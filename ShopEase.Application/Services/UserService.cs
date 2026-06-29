@@ -4,6 +4,9 @@ using Ecommerce.Application.Repositories;
 using Ecommerce.Application.Services;
 using Ecommerce.Domain.Models;
 using Microsoft.Extensions.Configuration;
+using ShopEase.Application.DTOs.Response;
+using ShopEase.Domain.Models;
+using System.Security.AccessControl;
 
 namespace Ecommerce.Service
 {
@@ -13,6 +16,7 @@ namespace Ecommerce.Service
         Task<UserGetResponse?> AuthenticateAsync(string email, string password);
         Task<UserResponse?> GetByIdAsync(int userId);
         Task UpdateRefreshTokenAsync(int userId, string refreshToken,DateTime refreshTokenExpiry);
+        Task<GenericSaveResponse> SaveAsync(Register register, int tenantId, int loggedInUserId);
     }
     #endregion
 
@@ -60,9 +64,18 @@ namespace Ecommerce.Service
         #endregion
 
         #region UpdateRefreshTokenAsync
-        public async Task UpdateRefreshTokenAsync(int userId, string refreshToken , DateTime refreshTokenExpiry)
+        public async Task UpdateRefreshTokenAsync(int userId, string refreshToken, DateTime refreshTokenExpiry)
         {
-            await _userRepository.UpdateRefreshToken(userId, refreshToken , refreshTokenExpiry);
+            await _userRepository.UpdateRefreshToken(userId, refreshToken, refreshTokenExpiry);
+        }
+        #endregion
+
+        #region SaveAsync
+        public async Task<GenericSaveResponse> SaveAsync(Register register, int tenantId, int loggedInUserId)
+        {
+            var response = await _userRepository.Save(register, tenantId, loggedInUserId);
+            var result = _mapper.Map<SaveResponse, GenericSaveResponse> (response);
+            return result;
         }
         #endregion
     }
