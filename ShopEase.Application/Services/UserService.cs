@@ -6,7 +6,6 @@ using Ecommerce.Domain.Models;
 using Microsoft.Extensions.Configuration;
 using ShopEase.Application.DTOs.Response;
 using ShopEase.Domain.Models;
-using System.Security.AccessControl;
 
 namespace Ecommerce.Service
 {
@@ -26,7 +25,6 @@ namespace Ecommerce.Service
         private readonly IMapper _mapper;
         private readonly IUserRepository _userRepository;
         private readonly IConfiguration _config;
-        private readonly IEmailService _emailService;
         private readonly IAWSS3Service _s3Service;
         #endregion
 
@@ -34,14 +32,12 @@ namespace Ecommerce.Service
         public UserService(
             IUserRepository userRepository,
             IConfiguration config,
-            IEmailService emailService,
             IAWSS3Service s3Service,
             IMapper mapper)
         {
             _mapper = mapper;
             _userRepository = userRepository;
             _config = config;
-            _emailService = emailService;
             _s3Service = s3Service;
         }
         #endregion
