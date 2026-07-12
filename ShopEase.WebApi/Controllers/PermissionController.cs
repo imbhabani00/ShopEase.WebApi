@@ -1,5 +1,6 @@
 ﻿using Asp.Versioning;
 using Ecommerce.Api.Controllers;
+using Ecommerce.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
