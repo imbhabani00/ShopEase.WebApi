@@ -1,8 +1,10 @@
 ﻿using Asp.Versioning;
 using Ecommerce.Api.Helper;
+using Ecommerce.Application.DTOs.Response;
 using Ecommerce.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 using ShopEase.Application.DTOs.Request;
+using ShopEase.Domain.Models;
 using System.Net;
 
 namespace Ecommerce.Api.Controllers
@@ -27,111 +29,105 @@ namespace Ecommerce.Api.Controllers
 
         #region GetAll
         [HttpGet("list")]
-        public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetAll([FromQuery] SortWithPageParameters sortWithPageParameters)
         {
+            var apiResponse = new ApiResponse();
             try
             {
-                var tenantId = User.GetTenantId() ?? 0;
-                var roles = await _roleService.GetAllAsync(tenantId, pageNumber, pageSize);
-
-                var apiResponse = CreateSuccessResponse(roles, HttpStatusCode.OK, "Roles retrieved successfully");
-                return new ObjectResult(apiResponse);
+                var tenantId = User.GetTenantId();
+                var roles = await _roleService.GetAllAsync(sortWithPageParameters, tenantId);
+                apiResponse = CreateSuccessResponse(roles, HttpStatusCode.OK, "Roles retrieved successfully");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "GetAll: Error retrieving roles");
-                var apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError, "Failed to retrieve roles");
-                return new ObjectResult(apiResponse);
+                apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError, "Failed to retrieve roles");
             }
+            return new ObjectResult(apiResponse);
         }
         #endregion
 
         #region GetById
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        [HttpGet("role-by-id/{roleId}")]
+        public async Task<IActionResult> GetById(int roleId)
         {
+            var apiResponse = new ApiResponse();
             try
             {
-                var role = await _roleService.GetByIdAsync(id);
-
-                if (role == null)
-                {
-                    var apiResponse = CreateFailedApiResponse(null, HttpStatusCode.NotFound, "Role not found");
-                    return new ObjectResult(apiResponse);
-                }
-
-                var response = CreateSuccessResponse(role, HttpStatusCode.OK, "Role retrieved successfully");
-                return new ObjectResult(response);
+                var response = await _roleService.GetByIdAsync(roleId);
+                apiResponse = response == null
+                    ? CreateFailedApiResponse(null, HttpStatusCode.NotFound, "Role not found")
+                    : CreateSuccessResponse(response, HttpStatusCode.OK, "Role retrieved successfully");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "GetById: Error retrieving role {RoleId}", id);
-                var apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError, "Failed to retrieve role");
-                return new ObjectResult(apiResponse);
+                _logger.LogError(ex, "GetById: Error retrieving role {RoleId}", roleId);
+                apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError, "Failed to retrieve role");
             }
+            return new ObjectResult(apiResponse);
         }
         #endregion
 
-        #region Create
-        [HttpPost("create")]
-        public async Task<IActionResult> Create([FromBody] RoleRequest request)
+        #region Save
+        [HttpPost("save")]
+        public async Task<IActionResult> Save([FromBody] RoleRequest request)
         {
+            var apiResponse = new ApiResponse();
+
             try
             {
-                if (string.IsNullOrEmpty(request.RoleName))
-                {
-                    var validationError = CreateFailedApiResponse(null, HttpStatusCode.BadRequest, "Role name is required");
-                    return new ObjectResult(validationError);
-                }
-
-                var tenantId = User.GetTenantId() ?? 0;
+                var tenantId = User.GetTenantId();
                 var userId = User.GetUserId()?.GetHashCode() ?? 0;
 
-                var response = await _roleService.CreateAsync(tenantId, request, userId);
+                var response = await _roleService.SaveAsync(request, tenantId, userId);
 
-                if (response.ReturnValue == 0)
+                switch (response.ReturnValue)
                 {
-                    var apiResponse = CreateSuccessResponse(response.NewId, HttpStatusCode.Created, "Role created successfully");
-                    return new ObjectResult(apiResponse);
-                }
-                else
-                {
-                    var apiResponse = CreateFailedApiResponse(null, HttpStatusCode.BadRequest, "Failed to create role");
-                    return new ObjectResult(apiResponse);
+                    case 1:
+                        apiResponse = CreateFailedApiResponse(
+                            null,
+                            HttpStatusCode.BadRequest,
+                            "Role name already exists."
+                        );
+                        break;
+
+                    case 2:
+                        apiResponse = CreateFailedApiResponse(
+                            null,
+                            HttpStatusCode.BadRequest,
+                            "Role code already exists."
+                        );
+                        break;
+
+                    default:
+                        apiResponse = response.NewId > 0
+                            ? CreateSuccessResponse(
+                                response.NewId,
+                                HttpStatusCode.OK,
+                                request.RoleId > 0
+                                    ? "Role updated successfully."
+                                    : "Role created successfully."
+                            )
+                            : CreateFailedApiResponse(
+                                null,
+                                HttpStatusCode.BadRequest,
+                                "Failed to save role."
+                            );
+                        break;
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Create: Error creating role");
-                var apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError, "Failed to create role");
-                return new ObjectResult(apiResponse);
-            }
-        }
-        #endregion
+                _logger.LogError(ex, "Save: Error saving role");
 
-        #region Update
-        [HttpPut("update")]
-        public async Task<IActionResult> Update([FromBody] RoleUpdateRequest request)
-        {
-            try
-            {
-                if (request.RoleId <= 0 || string.IsNullOrEmpty(request.RoleName))
-                {
-                    var validationError = CreateFailedApiResponse(null, HttpStatusCode.BadRequest, "Invalid role data");
-                    return new ObjectResult(validationError);
-                }
-
-                var userId = User.GetUserId()?.GetHashCode() ?? 0;
-                var apiResponse = await _roleService.UpdateAsync(request, userId);
-
-                return new ObjectResult(apiResponse);
+                apiResponse = CreateFailedApiResponse(
+                    null,
+                    HttpStatusCode.InternalServerError,
+                    "Failed to save role."
+                );
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Update: Error updating role");
-                var apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError, "Failed to update role");
-                return new ObjectResult(apiResponse);
-            }
+
+            return new ObjectResult(apiResponse);
         }
         #endregion
 

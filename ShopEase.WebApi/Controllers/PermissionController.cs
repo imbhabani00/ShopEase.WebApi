@@ -2,6 +2,7 @@
 using Ecommerce.Api.Controllers;
 using Ecommerce.Application.Services;
 using Microsoft.AspNetCore.Mvc;
+using ShopEase.Application.DTOs.Request;
 using System.Net;
 
 namespace ShopEase.WebApi.Controllers
@@ -46,7 +47,7 @@ namespace ShopEase.WebApi.Controllers
 
         #region Save
         [HttpPost("save")]
-        public async Task<IActionResult> Save([FromBody] PermissionUpdateRequest request)
+        public async Task<IActionResult> Save([FromBody] PermissionRequest request)
         {
             try
             {

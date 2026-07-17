@@ -2,7 +2,9 @@
 using AutoMapper;
 using Ecommerce.Application.DTOs.Response;
 using Ecommerce.Application.Repositories;
+using Microsoft.Extensions.DependencyInjection;
 using ShopEase.Application.DTOs.Request;
+using ShopEase.Application.DTOs.Response;
 using ShopEase.Application.DTOs.Response.Role;
 using ShopEase.Domain.Models;
 
@@ -11,10 +13,9 @@ namespace Ecommerce.Application.Services
     #region IRoleService
     public interface IRoleService
     {
-        Task<PaginatedResponse<RoleResponse>> GetAllAsync(SortWithPageParameters sortWithPageParameters, int tenantId);
+        Task<RoleResponseList> GetAllAsync(SortWithPageParameters sortWithPageParameters, int tenantId);
         Task<RoleResponse?> GetByIdAsync(int roleId);
-        Task<GenericSaveResponse> CreateAsync(int tenantId, RoleRequest request, int createdBy);
-        Task<ApiResponse> UpdateAsync(RoleUpdateRequest request, int modifiedBy);
+        Task<GenericSaveResponse> SaveAsync(RoleRequest roleRequest, int tenantId, int userId);
         Task<ApiResponse> DeleteAsync(int roleId, int deletedBy);
     }
     #endregion
@@ -37,45 +38,32 @@ namespace Ecommerce.Application.Services
         #endregion
 
         #region GetAllAsync
-        public async Task<PaginatedResponse<RoleResponse>> GetAllAsync(
+        public async Task<RoleResponseList> GetAllAsync(
             SortWithPageParameters sortWithPageParameters,
             int tenantId)
         {
-            var request = await _roleRepository.GetAllAsync(sortWithPageParameters, tenantId);
-
-            return _mapper.Map<PaginatedResponse<RoleResponse>>(request);
+            var request = await _roleRepository.GetAll(sortWithPageParameters, tenantId);
+            var response = _mapper.Map<RoleList, RoleResponseList>(request);
+            return response;
         }
         #endregion
 
         #region GetByIdAsync
         public async Task<RoleResponse?> GetByIdAsync(int roleId)
         {
-            var request = await _roleRepository.GetByIdAsync(roleId);
+            var request = await _roleRepository.GetById(roleId);
 
             return _mapper.Map<RoleResponse>(request);
         }
         #endregion
 
-        #region CreateAsync
-        public async Task<GenericSaveResponse> CreateAsync(
-            int tenantId,
-            GenericSaveResponse request,
-            int createdBy)
+        #region SaveAsync
+        public async Task<GenericSaveResponse> SaveAsync(RoleRequest roleRequest, int tenantId, int userId)
         {
-            var response = await _roleRepository.InsertAsync(tenantId, request, createdBy);
-
-            return _mapper.Map<GenericSaveResponse>(response);
-        }
-        #endregion
-
-        #region UpdateAsync
-        public async Task<ApiResponse> UpdateAsync(
-            RoleUpdateRequest request,
-            int modifiedBy)
-        {
-            var response = await _roleRepository.UpdateAsync(request, modifiedBy);
-
-            return _mapper.Map<ApiResponse>(response);
+            var request = _mapper.Map<RoleRequest, Role>(roleRequest);
+            var response = await _roleRepository.Save(request, tenantId, userId);
+            var result = _mapper.Map<SaveResponse, GenericSaveResponse>(response);
+            return result;
         }
         #endregion
 
@@ -84,7 +72,7 @@ namespace Ecommerce.Application.Services
             int roleId,
             int deletedBy)
         {
-            var response = await _roleRepository.DeleteAsync(roleId, deletedBy);
+            var response = await _roleRepository.Delete(roleId, deletedBy);
 
             return _mapper.Map<ApiResponse>(response);
         }

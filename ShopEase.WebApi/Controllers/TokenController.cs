@@ -101,7 +101,8 @@ namespace Ecommerce.Api.Controllers
                     RefreshToken = refreshToken,
                     UserId = result.User.UserId,
                     RoleCode = result.User.RoleCode,
-                    RoleName = result.User.RoleName
+                    RoleName = result.User.RoleName,
+                    RoleId = result.User.RoleId
                 });
                 return new ObjectResult(apiResponse);
             }

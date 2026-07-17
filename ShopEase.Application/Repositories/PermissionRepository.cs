@@ -34,7 +34,7 @@ namespace Ecommerce.Application.Repositories
                 connection.Open();
 
                 var permissions = await connection.QueryAsync<PermissionResponse>(
-                    "[dbo].[sp_Permission_GetByRole]",
+                    "[dbo].[Permission_GetByRole]",
                     parameters,
                     commandType: CommandType.StoredProcedure);
 
