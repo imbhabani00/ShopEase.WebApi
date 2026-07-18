@@ -2,7 +2,7 @@
 {
     public class Role : SortWithPageParameters
     {
-        public int RoleId { get; set; }
+        public int? RoleId { get; set; }
         public int TenantId { get; set; }
         public string RoleName { get; set; } = string.Empty;
         public string RoleCode { get; set; } = string.Empty;

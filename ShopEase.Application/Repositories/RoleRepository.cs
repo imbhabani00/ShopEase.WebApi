@@ -1,6 +1,5 @@
 ﻿using Dapper;
 using Microsoft.Extensions.Configuration;
-using ShopEase.Application.DTOs.Request;
 using ShopEase.Application.DTOs.Response.Role;
 using ShopEase.Domain.Models;
 using System.Data;
@@ -13,7 +12,7 @@ namespace Ecommerce.Application.Repositories
         Task<RoleList> GetAll(SortWithPageParameters sortWithPageParameters , int tenantId);
         Task<RoleResponse?> GetById(int roleId);
         Task<SaveResponse> Save(Role role, int tenantId, int userId);
-        Task<bool> Delete(int roleId, int deletedBy);
+        Task<SaveResponse> Delete(int roleId, int userId);
     }
     #endregion
 
@@ -25,7 +24,7 @@ namespace Ecommerce.Application.Repositories
         }
         #endregion
 
-        #region GetAllAsync
+        #region GetAll
         public async Task<RoleList> GetAll(SortWithPageParameters sortWithPageParameters, int tenantId)
         {
             var data = new RoleList();
@@ -77,47 +76,53 @@ namespace Ecommerce.Application.Repositories
 
         #region Save
         public async Task<SaveResponse> Save(Role role, int tenantId, int userId)
-        {
-            var data = new SaveResponse();
+           {
+            var response = new SaveResponse();
+
             using (var connection = CreateConnection())
             {
                 var parameters = new DynamicParameters();
+
+                parameters.Add("@RoleId", role.RoleId);
+                parameters.Add("@TenantId", tenantId);
                 parameters.Add("@RoleName", role.RoleName);
                 parameters.Add("@RoleCode", role.RoleCode);
                 parameters.Add("@UserId", userId);
-                parameters.Add("@TenantId", tenantId);
+
                 parameters.Add("@NewRoleId", dbType: DbType.Int32, direction: ParameterDirection.Output);
-                connection.Open();
+                parameters.Add("@ReturnValue", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
+
                 await connection.ExecuteAsync(
                     "[dbo].[Role_Save]",
                     parameters,
                     commandType: CommandType.StoredProcedure);
-                connection.Close();
-                return data;
+
+                response.ReturnValue = parameters.Get<int>("@ReturnValue");
+                response.NewId = parameters.Get<int>("@NewRoleId");
             }
+
+            return response;
         }
         #endregion
 
         #region Delete
-        public async Task<bool> Delete(int roleId, int deletedBy)
+        public async Task<SaveResponse> Delete(int roleId, int userId)
         {
+            var response = new SaveResponse();
             using (var connection = CreateConnection())
             {
                 var parameters = new DynamicParameters();
                 parameters.Add("@RoleId", roleId);
-                parameters.Add("@DeletedBy", deletedBy);
-
+                parameters.Add("@UserId ", userId);
+                parameters.Add("@ReturnValue", dbType: DbType.Int32, direction: ParameterDirection.Output);
                 connection.Open();
-
-                var result = await connection.ExecuteAsync(
-                    "[dbo].[sp_Role_Delete]",
+                await connection.ExecuteAsync(
+                    "[dbo].[Role_Delete]",
                     parameters,
                     commandType: CommandType.StoredProcedure);
-
-                connection.Close();
-
-                return result > 0;
+                response.ReturnValue = parameters.Get<int>("@ReturnValue");
             }
+            return response;    
         }
         #endregion
     }
