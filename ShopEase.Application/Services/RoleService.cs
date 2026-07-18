@@ -16,7 +16,7 @@ namespace Ecommerce.Application.Services
         Task<RoleResponseList> GetAllAsync(SortWithPageParameters sortWithPageParameters, int tenantId);
         Task<RoleResponse?> GetByIdAsync(int roleId);
         Task<GenericSaveResponse> SaveAsync(RoleRequest roleRequest, int tenantId, int userId);
-        Task<ApiResponse> DeleteAsync(int roleId, int deletedBy);
+        Task<GenericSaveResponse> DeleteAsync(int roleId, int userId);
     }
     #endregion
 
@@ -68,13 +68,11 @@ namespace Ecommerce.Application.Services
         #endregion
 
         #region DeleteAsync
-        public async Task<ApiResponse> DeleteAsync(
-            int roleId,
-            int deletedBy)
+        public async Task<GenericSaveResponse> DeleteAsync(int roleId, int userId)
         {
-            var response = await _roleRepository.Delete(roleId, deletedBy);
-
-            return _mapper.Map<ApiResponse>(response);
+            var request = await _roleRepository.Delete(roleId, userId);
+            var response =  _mapper.Map<SaveResponse,GenericSaveResponse>(request);
+            return response;
         }
         #endregion
     }

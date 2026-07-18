@@ -77,12 +77,17 @@ namespace Ecommerce.Api.Controllers
             try
             {
                 var tenantId = User.GetTenantId();
-                var userId = User.GetUserId()?.GetHashCode() ?? 0;
+                var userId = User.GetUserId() ?? 0;
 
                 var response = await _roleService.SaveAsync(request, tenantId, userId);
 
                 switch (response.ReturnValue)
                 {
+                    case 0:
+                        apiResponse = CreateSuccessResponse(response.NewId,
+                            HttpStatusCode.OK,
+                            response.NewId > 0 ? "Role saved successfully." : "Role updated successfully.");
+                        break;
                     case 1:
                         apiResponse = CreateFailedApiResponse(
                             null,
@@ -98,21 +103,11 @@ namespace Ecommerce.Api.Controllers
                             "Role code already exists."
                         );
                         break;
-
                     default:
-                        apiResponse = response.NewId > 0
-                            ? CreateSuccessResponse(
-                                response.NewId,
-                                HttpStatusCode.OK,
-                                request.RoleId > 0
-                                    ? "Role updated successfully."
-                                    : "Role created successfully."
-                            )
-                            : CreateFailedApiResponse(
-                                null,
-                                HttpStatusCode.BadRequest,
-                                "Failed to save role."
-                            );
+                        apiResponse = CreateFailedApiResponse(
+                            null,
+                            HttpStatusCode.InternalServerError,
+                            "Internal server error.");
                         break;
                 }
             }
@@ -126,28 +121,29 @@ namespace Ecommerce.Api.Controllers
                     "Failed to save role."
                 );
             }
-
             return new ObjectResult(apiResponse);
         }
         #endregion
 
         #region Delete
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        [HttpDelete("delete/{roleId}")]
+        public async Task<IActionResult> Delete(int roleId)
         {
+            var apiResponse = new ApiResponse();
             try
             {
                 var userId = User.GetUserId()?.GetHashCode() ?? 0;
-                var apiResponse = await _roleService.DeleteAsync(id, userId);
-
-                return new ObjectResult(apiResponse);
+                var response = await _roleService.DeleteAsync(roleId, userId);
+                apiResponse = response.ReturnValue == 1
+                    ? CreateSuccessResponse(response, HttpStatusCode.OK, "Role deleted successfully")
+                    : CreateFailedApiResponse(null, HttpStatusCode.BadRequest, "Failed to delete role");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Delete: Error deleting role {RoleId}", id);
-                var apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError, "Failed to delete role");
-                return new ObjectResult(apiResponse);
+                _logger.LogError(ex, "Delete: Error deleting role {RoleId}", roleId);
+                apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError, "Failed to delete role");
             }
+            return new ObjectResult(apiResponse);
         }
         #endregion
     }

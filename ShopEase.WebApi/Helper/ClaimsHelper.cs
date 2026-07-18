@@ -4,10 +4,12 @@ namespace Ecommerce.Api.Helper
 {
     public static class ClaimsHelper
     {
-        public static Guid? GetUserId(this ClaimsPrincipal user)
+        public static int? GetUserId(this ClaimsPrincipal user)
         {
             var claim = user.FindFirst(ClaimTypes.NameIdentifier);
-            return claim != null && Guid.TryParse(claim.Value, out var id) ? id : null;
+            if (claim != null && int.TryParse(claim.Value, out var id))
+                return id;
+            return null;
         }
 
         public static int GetTenantId(this ClaimsPrincipal user)
