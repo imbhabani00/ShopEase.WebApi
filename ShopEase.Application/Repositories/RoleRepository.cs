@@ -34,6 +34,9 @@ namespace Ecommerce.Application.Repositories
                 parameters.Add("@TenantId", tenantId);
                 parameters.Add("@PageNumber", sortWithPageParameters.PageNumber);
                 parameters.Add("@PageSize", sortWithPageParameters.PageSize);
+                parameters.Add("@SearchString", sortWithPageParameters.SearchString);
+                parameters.Add("@SortParameter", sortWithPageParameters.SortParameter);
+                parameters.Add("@SortDirection", sortWithPageParameters.SortDirection);
 
                 connection.Open();
 
