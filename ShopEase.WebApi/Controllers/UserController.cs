@@ -17,6 +17,7 @@ namespace Ecommerce.Api.Controllers
         private readonly IUserService _userService;
         private readonly IMapper _mapper;
         private readonly ILogger<UserController> _logger;
+
         public UserController(IUserService userService,
             IMapper mapper,
             ILogger<UserController> logger)
@@ -35,7 +36,7 @@ namespace Ecommerce.Api.Controllers
             {
                 var loggedInUserId = CurrentUserId ?? 0;
                 var tenantId = User.GetTenantId() == 0 ? 1 : User.GetTenantId();
-                var response = await _userService.SaveAsync(register, tenantId , loggedInUserId);
+                var response = await _userService.SaveAsync(register, tenantId, loggedInUserId);
 
                 switch (response.ReturnValue)
                 {
@@ -62,6 +63,26 @@ namespace Ecommerce.Api.Controllers
                 _logger.LogError(ex, "Registration error");
                 apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError,
                     "An error occurred.");
+            }
+            return new ObjectResult(apiResponse);
+        }
+        #endregion
+
+        #region GetList
+        [HttpGet("list")]
+        public async Task<IActionResult> GetAll([FromQuery] SortWithPageParameters sortWithPageParameters)
+        {
+            var apiResponse = new ApiResponse();
+            try
+            {
+                var tenantId = User.GetTenantId();
+                var users = await _userService.GetListAsync(sortWithPageParameters, tenantId);
+                apiResponse = CreateSuccessResponse(users, HttpStatusCode.OK, "Users retrieved successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetAll: Error retrieving users");
+                apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError, "Failed to retrieve users");
             }
             return new ObjectResult(apiResponse);
         }

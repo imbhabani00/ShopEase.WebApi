@@ -14,7 +14,7 @@ namespace Ecommerce.Api.Helper
 
         public static int GetTenantId(this ClaimsPrincipal user)
         {
-            var tenantId = user.FindFirst("http://schemas.microsoft.com/identity/claims/tenantid")?.Value;
+            var tenantId = user.FindFirst("TenantId")?.Value;
             return int.TryParse(tenantId, out var id) ? id : 0;
         }
 

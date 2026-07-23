@@ -5,6 +5,7 @@ using Ecommerce.Application.Services;
 using Ecommerce.Domain.Models;
 using Microsoft.Extensions.Configuration;
 using ShopEase.Application.DTOs.Response;
+using ShopEase.Application.DTOs.Response.Role;
 using ShopEase.Domain.Models;
 
 namespace Ecommerce.Service
@@ -16,6 +17,7 @@ namespace Ecommerce.Service
         Task<UserResponse?> GetByIdAsync(int userId);
         Task UpdateRefreshTokenAsync(int userId, string refreshToken,DateTime refreshTokenExpiry);
         Task<GenericSaveResponse> SaveAsync(Register register, int tenantId, int loggedInUserId);
+        Task<UsersResponseList> GetListAsync(SortWithPageParameters sortWithPageParameters, int tenantId);
     }
     #endregion
 
@@ -72,6 +74,15 @@ namespace Ecommerce.Service
             var response = await _userRepository.Save(register, tenantId, loggedInUserId);
             var result = _mapper.Map<SaveResponse, GenericSaveResponse> (response);
             return result;
+        }
+        #endregion
+
+        #region GetListAsync
+        public async Task<UsersResponseList> GetListAsync( SortWithPageParameters sortWithPageParameters,int tenantId)
+        {
+            var request = await _userRepository.GetList(sortWithPageParameters, tenantId);
+            var response = _mapper.Map<UsersList, UsersResponseList>(request);
+            return response;
         }
         #endregion
     }

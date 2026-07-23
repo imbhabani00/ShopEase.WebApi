@@ -9,7 +9,7 @@ namespace Ecommerce.Application.Repositories
     #region Interface
     public interface IRoleRepository
     {
-        Task<RoleList> GetAll(SortWithPageParameters sortWithPageParameters , int tenantId);
+        Task<RoleList> GetList(SortWithPageParameters sortWithPageParameters , int tenantId);
         Task<RoleResponse?> GetById(int roleId);
         Task<SaveResponse> Save(Role role, int tenantId, int userId);
         Task<SaveResponse> Delete(int roleId, int userId);
@@ -24,8 +24,8 @@ namespace Ecommerce.Application.Repositories
         }
         #endregion
 
-        #region GetAll
-        public async Task<RoleList> GetAll(SortWithPageParameters sortWithPageParameters, int tenantId)
+        #region GetList
+        public async Task<RoleList> GetList(SortWithPageParameters sortWithPageParameters, int tenantId)
         {
             var data = new RoleList();
             using (var connection = CreateConnection())
@@ -41,7 +41,7 @@ namespace Ecommerce.Application.Repositories
                 connection.Open();
 
                 var results = await connection.QueryMultipleAsync(
-                    "[dbo].[Role_GetAll]",
+                    "[dbo].[Role_GetList]",
                     parameters,
                     commandType: CommandType.StoredProcedure);
 

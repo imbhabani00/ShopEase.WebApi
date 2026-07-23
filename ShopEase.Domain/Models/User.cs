@@ -1,5 +1,6 @@
 ﻿namespace Ecommerce.Domain.Models
 {
+    #region User
     public class User
     {
         public int UserId { get; set; }
@@ -22,10 +23,43 @@
         public DateTime? ModifiedDate { get; set; }
         public DateTime? DeletedDate { get; set; }
     }
+    #endregion
 
+    #region UserGet
     public class UserGet
     {
         public User? User { get; set; }
         public int ReturnValue { get; set; }
     }
+    #endregion
+
+    #region Users
+    public class Users
+    {
+        public int? UserId { get; set; }
+        public int? RoleId { get; set; }
+        public int CreatedBy { get; set; }
+        public int ModifiedBy { get; set; }
+        public string FirstName { get; set; }
+        public string MiddleName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public string PhoneNumber { get; set; }
+        public string RoleName { get; set; }
+        public string RoleCode { get; set; }
+        public bool IsActive { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime ModifiedDate { get; set; }
+    }
+    #endregion
+
+    #region UserList
+
+    public class UsersList
+    {
+        public List<Users> UsersData { get; set; }
+        public int TotalCount { get; set; }
+        public int ReturnValue { get; set; }
+    }
+    #endregion
 }
