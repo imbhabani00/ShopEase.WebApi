@@ -61,7 +61,7 @@ namespace Ecommerce.Application.Repositories
                 connection.Open();
 
                 var result = await connection.ExecuteAsync(
-                    "[dbo].[sp_Permission_SavePermissions]",
+                    "[dbo].[Permission_SavePermissions]",
                     parameters,
                     commandType: CommandType.StoredProcedure);
 
