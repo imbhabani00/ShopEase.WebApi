@@ -27,7 +27,7 @@ namespace Ecommerce.Api.Controllers
         }
         #endregion
 
-        #region GetAll
+        #region GetList
         [HttpGet("list")]
         public async Task<IActionResult> GetAll([FromQuery] SortWithPageParameters sortWithPageParameters)
         {
@@ -35,7 +35,7 @@ namespace Ecommerce.Api.Controllers
             try
             {
                 var tenantId = User.GetTenantId();
-                var roles = await _roleService.GetAllAsync(sortWithPageParameters, tenantId);
+                var roles = await _roleService.GetListAsync(sortWithPageParameters, tenantId);
                 apiResponse = CreateSuccessResponse(roles, HttpStatusCode.OK, "Roles retrieved successfully");
             }
             catch (Exception ex)

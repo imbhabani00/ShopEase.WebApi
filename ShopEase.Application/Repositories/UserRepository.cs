@@ -13,6 +13,7 @@ namespace Ecommerce.Application.Repositories
         Task<UserGet?> GetById(int userId);
         Task UpdateRefreshToken(int userId, string refreshToken, DateTime refreshTokenExpiry);
         Task<SaveResponse> Save(Register register, int tenantId, int loggedInUserId);
+        Task<UsersList> GetList(SortWithPageParameters sortWithPageParameters, int tenantId);
     }
     #endregion
 
@@ -105,6 +106,37 @@ namespace Ecommerce.Application.Repositories
                 }
             }
             return response;
+        }
+        #endregion
+
+        #region GetList
+        public async Task<UsersList> GetList(SortWithPageParameters sortWithPageParameters, int tenantId)
+        {
+            var data = new UsersList();
+            using (var connection = CreateConnection())
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@TenantId", tenantId);
+                parameters.Add("@PageNumber", sortWithPageParameters.PageNumber);
+                parameters.Add("@PageSize", sortWithPageParameters.PageSize);
+                parameters.Add("@SearchString", sortWithPageParameters.SearchString);
+                parameters.Add("@SortParameter", sortWithPageParameters.SortParameter);
+                parameters.Add("@SortDirection", sortWithPageParameters.SortDirection);
+
+                connection.Open();
+
+                var results = await connection.QueryMultipleAsync(
+                    "[dbo].[Users_GetList]",
+                    parameters,
+                    commandType: CommandType.StoredProcedure);
+
+                if (data.ReturnValue == 0)
+                {
+                    data.UsersData = results.Read<Users>().ToList();
+                    data.TotalCount = results.ReadFirstOrDefault<int>();
+                }
+                return data;
+            }
         }
         #endregion
     }

@@ -13,6 +13,8 @@ namespace Ecommerce.Application.Mapper
             CreateMap<User , UserResponse>();
             CreateMap<UserGet, UserGetResponse>();
             CreateMap<SaveResponse, GenericSaveResponse>();
+            CreateMap<Users, UsersResponse>();
+            CreateMap<UsersList, UsersResponseList>();
         }
     }
 }

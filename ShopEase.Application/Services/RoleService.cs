@@ -1,8 +1,5 @@
-﻿using Amazon.Runtime;
-using AutoMapper;
-using Ecommerce.Application.DTOs.Response;
+﻿using AutoMapper;
 using Ecommerce.Application.Repositories;
-using Microsoft.Extensions.DependencyInjection;
 using ShopEase.Application.DTOs.Request;
 using ShopEase.Application.DTOs.Response;
 using ShopEase.Application.DTOs.Response.Role;
@@ -13,7 +10,7 @@ namespace Ecommerce.Application.Services
     #region IRoleService
     public interface IRoleService
     {
-        Task<RoleResponseList> GetAllAsync(SortWithPageParameters sortWithPageParameters, int tenantId);
+        Task<RoleResponseList> GetListAsync(SortWithPageParameters sortWithPageParameters, int tenantId);
         Task<RoleResponse?> GetByIdAsync(int roleId);
         Task<GenericSaveResponse> SaveAsync(RoleRequest roleRequest, int tenantId, int userId);
         Task<GenericSaveResponse> DeleteAsync(int roleId, int userId);
@@ -37,12 +34,12 @@ namespace Ecommerce.Application.Services
         }
         #endregion
 
-        #region GetAllAsync
-        public async Task<RoleResponseList> GetAllAsync(
+        #region GetListAsync
+        public async Task<RoleResponseList> GetListAsync(
             SortWithPageParameters sortWithPageParameters,
             int tenantId)
         {
-            var request = await _roleRepository.GetAll(sortWithPageParameters, tenantId);
+            var request = await _roleRepository.GetList(sortWithPageParameters, tenantId);
             var response = _mapper.Map<RoleList, RoleResponseList>(request);
             return response;
         }
