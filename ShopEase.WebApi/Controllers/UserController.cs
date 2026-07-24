@@ -59,8 +59,8 @@ namespace Ecommerce.Api.Controllers
             var apiResponse = new ApiResponse();
             try
             {
-                var loggedInUserId = CurrentUserId ?? 0;
-                var tenantId = User.GetTenantId() == 0 ? 1 : User.GetTenantId();
+                var loggedInUserId = User.GetUserId() ?? 0;
+                var tenantId = User.GetTenantId();
                 var response = await _userService.SaveAsync(userRequest, tenantId, loggedInUserId);
 
                 switch (response.ReturnValue)
@@ -88,6 +88,26 @@ namespace Ecommerce.Api.Controllers
                 _logger.LogError(ex, "Registration error");
                 apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError,
                     "An error occurred.");
+            }
+            return new ObjectResult(apiResponse);
+        }
+        #endregion
+        #region ChangePassword
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            var apiResponse = new ApiResponse();
+            try
+            {
+                var result = await _userService.ChangePasswordAsync(request.UserId, request.PasswordHash);
+                apiResponse = result != null
+                    ? CreateSuccessResponse(result, HttpStatusCode.OK, "Password changed successfully.")
+                    : CreateFailedApiResponse(null, HttpStatusCode.BadRequest, "Failed to change password.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "ChangePassword error");
+                apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError, "An error occurred.");
             }
             return new ObjectResult(apiResponse);
         }

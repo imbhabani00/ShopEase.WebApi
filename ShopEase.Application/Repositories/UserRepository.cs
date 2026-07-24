@@ -15,6 +15,7 @@ namespace Ecommerce.Application.Repositories
         Task UpdateRefreshToken(int userId, string refreshToken, DateTime refreshTokenExpiry);
         Task<SaveResponse> Save(UserRequest userRequest, int tenantId, int loggedInUserId);
         Task<UsersList> GetList(SortWithPageParameters sortWithPageParameters, int tenantId);
+        Task<SaveResponse> ChangePassword(int userId, string passwordHash);
     }
     #endregion
 
@@ -34,13 +35,21 @@ namespace Ecommerce.Application.Repositories
             {
                 var parameters = new DynamicParameters();
                 parameters.Add("@Email", email);
-                parameters.Add("@PasswordHash", password);
+                //parameters.Add("@PasswordHash", password);
                 parameters.Add("@ReturnValue", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
                 connection.Open();
                 var result = await connection.QueryMultipleAsync("[dbo].[User_Authenticate]", parameters, commandType: CommandType.StoredProcedure);
                 data.User = await result.ReadFirstOrDefaultAsync<User>();
                 data.ReturnValue = parameters.Get<int>("@ReturnValue");
                 connection.Close();
+            }
+            if (data.ReturnValue == 0 && data.User != null)
+            {
+                var isPasswordValid = BCrypt.Net.BCrypt.Verify(password, data.User.PasswordHash);
+                if (!isPasswordValid)
+                {
+                    data.ReturnValue = 2; // Invalid password
+                }
             }
             return data;
         }
@@ -95,6 +104,7 @@ namespace Ecommerce.Application.Repositories
                 parameters.Add("@PhoneNumber", userRequest.PhoneNumber);
                 parameters.Add("@RoleId", userRequest.RoleId);
                 parameters.Add("@IsActive", userRequest.IsActive);
+                parameters.Add("@PasswordHash", userRequest.PasswordHash);
                 parameters.Add("@NewUserId", dbType: DbType.Int32, direction: ParameterDirection.Output);
                 parameters.Add("@ReturnValue", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
                 connection.Open();
@@ -137,6 +147,30 @@ namespace Ecommerce.Application.Repositories
                 }
                 return data;
             }
+        }
+        #endregion
+
+        #region ChangePassword
+        public async Task<SaveResponse> ChangePassword(int userId, string passwordHash)
+        {
+            var response = new SaveResponse();
+
+            using (var connection = CreateConnection())
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@UserId", userId);
+                parameters.Add("@PasswordHash", passwordHash);
+                parameters.Add("@ReturnValue", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
+
+                await connection.ExecuteAsync(
+                    "Users_ChangePassword",
+                    parameters,
+                    commandType: CommandType.StoredProcedure);
+
+                response.ReturnValue = parameters.Get<int>("@ReturnValue");
+            }
+
+            return response;
         }
         #endregion
     }

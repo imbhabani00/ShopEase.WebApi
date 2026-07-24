@@ -22,6 +22,8 @@
         public DateTime? LastLoginDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
         public DateTime? DeletedDate { get; set; }
+        public bool ForcePasswordChange { get; set; }
+
     }
     #endregion
 
