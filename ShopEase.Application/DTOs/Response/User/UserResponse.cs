@@ -22,6 +22,8 @@
         public DateTime? LastLoginDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
         public DateTime? DeletedDate { get; set; }
+        public bool ForcePasswordChange { get; set; }
+
     }
     #endregion
 
@@ -38,7 +40,7 @@
     {
         public int? UserId { get; set; }
         public int? RoleId { get; set; }
-        public int CreatedBy { get; set; }
+        public string CreatedBy { get; set; }
         public int ModifiedBy { get; set; }
         public string FirstName { get; set; }
         public string MiddleName { get; set; }

@@ -1,4 +1,4 @@
-﻿namespace Ecommerce.Domain.Models
+﻿namespace ShopEase.Domain.Models.User
 {
     #region User
     public class User
@@ -15,6 +15,7 @@
         public string? ModifiedBy { get; set; }
         public string? DeletedBy { get; set; }
         public string? PasswordChangedDate { get; set; }
+        public string? PasswordHash { get; set; }
         public DateTime? RefreshTokenExpiry { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }
@@ -22,6 +23,8 @@
         public DateTime? LastLoginDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
         public DateTime? DeletedDate { get; set; }
+        public bool ForcePasswordChange { get; set; }
+
     }
     #endregion
 
@@ -38,7 +41,7 @@
     {
         public int? UserId { get; set; }
         public int? RoleId { get; set; }
-        public int CreatedBy { get; set; }
+        public string CreatedBy { get; set; }
         public int ModifiedBy { get; set; }
         public string FirstName { get; set; }
         public string MiddleName { get; set; }

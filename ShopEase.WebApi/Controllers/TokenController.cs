@@ -7,6 +7,7 @@ using Ecommerce.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using ShopEase.Domain.Models.Authuntication;
 using System.Net;
 using System.Security.Claims;
 
@@ -83,6 +84,7 @@ namespace Ecommerce.Api.Controllers
                     new Claim("RoleCode", result.User.RoleCode ?? "User"),
                     new Claim(ClaimTypes.Email, result.User.Email ?? string.Empty),
                     new Claim("TenantId", result.User.TenantId?.ToString() ?? ""),
+                    new Claim("ForcePasswordChange", result.User.ForcePasswordChange.ToString(), ClaimValueTypes.Boolean),
                     new Claim("jti", Guid.NewGuid().ToString())
 
                 };
@@ -102,7 +104,8 @@ namespace Ecommerce.Api.Controllers
                     UserId = result.User.UserId,
                     RoleCode = result.User.RoleCode,
                     RoleName = result.User.RoleName,
-                    RoleId = result.User.RoleId
+                    RoleId = result.User.RoleId,
+                    ForcePasswordChange = result.User.ForcePasswordChange
                 });
                 return new ObjectResult(apiResponse);
             }

@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
 using Ecommerce.Application.Repositories;
-using ShopEase.Application.DTOs.Request;
+using ShopEase.Application.DTOs.Request.Role;
 using ShopEase.Application.DTOs.Response;
 using ShopEase.Application.DTOs.Response.Role;
 using ShopEase.Domain.Models;
+using ShopEase.Domain.Models.Role;
 
 namespace Ecommerce.Application.Services
 {

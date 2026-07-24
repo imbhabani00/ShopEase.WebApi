@@ -3,7 +3,7 @@ using Ecommerce.Api.Helper;
 using Ecommerce.Application.DTOs.Response;
 using Ecommerce.Application.Services;
 using Microsoft.AspNetCore.Mvc;
-using ShopEase.Application.DTOs.Request;
+using ShopEase.Application.DTOs.Request.Role;
 using ShopEase.Domain.Models;
 using System.Net;
 

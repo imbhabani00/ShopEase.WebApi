@@ -2,12 +2,11 @@
 using Ecommerce.Application.DTOs.Response.User;
 using Ecommerce.Application.Repositories;
 using Ecommerce.Application.Services;
-using Ecommerce.Domain.Models;
 using Microsoft.Extensions.Configuration;
+using ShopEase.Application.DTOs.Request.user;
 using ShopEase.Application.DTOs.Response;
-using ShopEase.Application.DTOs.Response.Role;
 using ShopEase.Domain.Models;
-
+using ShopEase.Domain.Models.User;
 namespace Ecommerce.Service
 {
     #region IUserService
@@ -15,9 +14,10 @@ namespace Ecommerce.Service
     {
         Task<UserGetResponse?> AuthenticateAsync(string email, string password);
         Task<UserResponse?> GetByIdAsync(int userId);
-        Task UpdateRefreshTokenAsync(int userId, string refreshToken,DateTime refreshTokenExpiry);
-        Task<GenericSaveResponse> SaveAsync(Register register, int tenantId, int loggedInUserId);
+        Task UpdateRefreshTokenAsync(int userId, string refreshToken, DateTime refreshTokenExpiry);
+        Task<GenericSaveResponse> SaveAsync(UserRequest userRequest, int tenantId, int loggedInUserId);
         Task<UsersResponseList> GetListAsync(SortWithPageParameters sortWithPageParameters, int tenantId);
+        Task<GenericSaveResponse> ChangePasswordAsync(int userId, string passwordHash);
     }
     #endregion
 
@@ -69,19 +69,28 @@ namespace Ecommerce.Service
         #endregion
 
         #region SaveAsync
-        public async Task<GenericSaveResponse> SaveAsync(Register register, int tenantId, int loggedInUserId)
+        public async Task<GenericSaveResponse> SaveAsync(UserRequest userRequest, int tenantId, int loggedInUserId)
         {
-            var response = await _userRepository.Save(register, tenantId, loggedInUserId);
-            var result = _mapper.Map<SaveResponse, GenericSaveResponse> (response);
+            var response = await _userRepository.Save(userRequest, tenantId, loggedInUserId);
+            var result = _mapper.Map<SaveResponse, GenericSaveResponse>(response);
             return result;
         }
         #endregion
 
         #region GetListAsync
-        public async Task<UsersResponseList> GetListAsync( SortWithPageParameters sortWithPageParameters,int tenantId)
+        public async Task<UsersResponseList> GetListAsync(SortWithPageParameters sortWithPageParameters, int tenantId)
         {
             var request = await _userRepository.GetList(sortWithPageParameters, tenantId);
             var response = _mapper.Map<UsersList, UsersResponseList>(request);
+            return response;
+        }
+        #endregion
+
+        #region ChangePasswordAsync
+        public async Task<GenericSaveResponse> ChangePasswordAsync(int userId, string passwordHash)
+        {
+            var request = await _userRepository.ChangePassword(userId, passwordHash);
+            var response = _mapper.Map<SaveResponse, GenericSaveResponse>(request);
             return response;
         }
         #endregion

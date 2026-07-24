@@ -1,8 +1,9 @@
 ﻿using AutoMapper;
-using ShopEase.Application.DTOs.Request;
+using ShopEase.Application.DTOs.Request.Role;
 using ShopEase.Application.DTOs.Response;
 using ShopEase.Application.DTOs.Response.Role;
 using ShopEase.Domain.Models;
+using ShopEase.Domain.Models.Role;
 
 namespace ShopEase.Application.Mapper
 {

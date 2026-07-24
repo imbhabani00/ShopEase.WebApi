@@ -4,6 +4,7 @@ using Ecommerce.Api.Helper;
 using Ecommerce.Application.DTOs.Response;
 using Ecommerce.Service;
 using Microsoft.AspNetCore.Mvc;
+using ShopEase.Application.DTOs.Request.user;
 using ShopEase.Domain.Models;
 using System.Net;
 
@@ -14,10 +15,13 @@ namespace Ecommerce.Api.Controllers
     [Route("api/v{version:apiVersion}/[controller]")]
     public class UserController : BaseApiController
     {
+        #region Properties
         private readonly IUserService _userService;
         private readonly IMapper _mapper;
         private readonly ILogger<UserController> _logger;
+        #endregion
 
+        #region Constructor
         public UserController(IUserService userService,
             IMapper mapper,
             ILogger<UserController> logger)
@@ -26,23 +30,44 @@ namespace Ecommerce.Api.Controllers
             _mapper = mapper;
             _logger = logger;
         }
+        #endregion
 
-        #region Register
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] Register register)
+        #region GetList
+        [HttpGet("list")]
+        public async Task<IActionResult> GetAll([FromQuery] SortWithPageParameters sortWithPageParameters)
         {
             var apiResponse = new ApiResponse();
             try
             {
-                var loggedInUserId = CurrentUserId ?? 0;
-                var tenantId = User.GetTenantId() == 0 ? 1 : User.GetTenantId();
-                var response = await _userService.SaveAsync(register, tenantId, loggedInUserId);
+                var tenantId = User.GetTenantId();
+                var users = await _userService.GetListAsync(sortWithPageParameters, tenantId);
+                apiResponse = CreateSuccessResponse(users, HttpStatusCode.OK, "Users retrieved successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetAll: Error retrieving users");
+                apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError, "Failed to retrieve users");
+            }
+            return new ObjectResult(apiResponse);
+        }
+        #endregion
+
+        #region Save
+        [HttpPost("save")]
+        public async Task<IActionResult> Save([FromBody] UserRequest userRequest)
+        {
+            var apiResponse = new ApiResponse();
+            try
+            {
+                var loggedInUserId = User.GetUserId() ?? 0;
+                var tenantId = User.GetTenantId();
+                var response = await _userService.SaveAsync(userRequest, tenantId, loggedInUserId);
 
                 switch (response.ReturnValue)
                 {
                     case 0:
                         apiResponse = CreateSuccessResponse(response.NewId, HttpStatusCode.OK,
-                            response.NewId > 0 ? "Registration successful." : "Registration failed.");
+                            response.NewId > 0 ? "User saved successful." : "User failed to save.");
                         break;
                     case 1:
                         apiResponse = CreateFailedApiResponse(null, HttpStatusCode.Conflict,
@@ -67,22 +92,22 @@ namespace Ecommerce.Api.Controllers
             return new ObjectResult(apiResponse);
         }
         #endregion
-
-        #region GetList
-        [HttpGet("list")]
-        public async Task<IActionResult> GetAll([FromQuery] SortWithPageParameters sortWithPageParameters)
+        #region ChangePassword
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
         {
             var apiResponse = new ApiResponse();
             try
             {
-                var tenantId = User.GetTenantId();
-                var users = await _userService.GetListAsync(sortWithPageParameters, tenantId);
-                apiResponse = CreateSuccessResponse(users, HttpStatusCode.OK, "Users retrieved successfully");
+                var result = await _userService.ChangePasswordAsync(request.UserId, request.PasswordHash);
+                apiResponse = result != null
+                    ? CreateSuccessResponse(result, HttpStatusCode.OK, "Password changed successfully.")
+                    : CreateFailedApiResponse(null, HttpStatusCode.BadRequest, "Failed to change password.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "GetAll: Error retrieving users");
-                apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError, "Failed to retrieve users");
+                _logger.LogError(ex, "ChangePassword error");
+                apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError, "An error occurred.");
             }
             return new ObjectResult(apiResponse);
         }
