@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Ecommerce.Application.DTOs.Response.User;
-using Ecommerce.Domain.Models;
 using ShopEase.Application.DTOs.Response;
 using ShopEase.Domain.Models;
+using ShopEase.Domain.Models.User;
 
 namespace Ecommerce.Application.Mapper
 {

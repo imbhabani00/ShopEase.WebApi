@@ -1,7 +1,8 @@
 ﻿using Dapper;
-using Ecommerce.Domain.Models;
 using Microsoft.Extensions.Configuration;
+using ShopEase.Application.DTOs.Request.user;
 using ShopEase.Domain.Models;
+using ShopEase.Domain.Models.User;
 using System.Data;
 
 namespace Ecommerce.Application.Repositories
@@ -12,7 +13,7 @@ namespace Ecommerce.Application.Repositories
         Task<UserGet?> Authenticate(string email, string password);
         Task<UserGet?> GetById(int userId);
         Task UpdateRefreshToken(int userId, string refreshToken, DateTime refreshTokenExpiry);
-        Task<SaveResponse> Save(Register register, int tenantId, int loggedInUserId);
+        Task<SaveResponse> Save(UserRequest userRequest, int tenantId, int loggedInUserId);
         Task<UsersList> GetList(SortWithPageParameters sortWithPageParameters, int tenantId);
     }
     #endregion
@@ -78,23 +79,22 @@ namespace Ecommerce.Application.Repositories
         #endregion
 
         #region Save
-        public async Task<SaveResponse> Save(Register register, int tenantId, int loggedInUserId)
+        public async Task<SaveResponse> Save(UserRequest userRequest, int tenantId, int loggedInUserId)
         {
             var response = new SaveResponse();
             using (var connection = CreateConnection())
             {
                 var parameters = new DynamicParameters();
-                parameters.Add("@UserId", register.UserId);
+                parameters.Add("@UserId", userRequest.UserId);
                 parameters.Add("@TenantId", tenantId);
                 parameters.Add("@LoggedInUserId", loggedInUserId);
-                parameters.Add("@FirstName", register.FirstName);
-                parameters.Add("@MiddleName", register.MiddleName);
-                parameters.Add("@LastName", register.LastName);
-                parameters.Add("@Email", register.Email);
-                parameters.Add("@PhoneNumber", register.PhoneNumber);
-                parameters.Add("@PasswordHash", register.PasswordHash);
-                parameters.Add("@RoleId", register.RoleId);
-                parameters.Add("@IsActive", register.IsActive);
+                parameters.Add("@FirstName", userRequest.FirstName);
+                parameters.Add("@MiddleName", userRequest.MiddleName);
+                parameters.Add("@LastName", userRequest.LastName);
+                parameters.Add("@Email", userRequest.Email);
+                parameters.Add("@PhoneNumber", userRequest.PhoneNumber);
+                parameters.Add("@RoleId", userRequest.RoleId);
+                parameters.Add("@IsActive", userRequest.IsActive);
                 parameters.Add("@NewUserId", dbType: DbType.Int32, direction: ParameterDirection.Output);
                 parameters.Add("@ReturnValue", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
                 connection.Open();

@@ -7,6 +7,7 @@ using Ecommerce.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using ShopEase.Domain.Models.Authuntication;
 using System.Net;
 using System.Security.Claims;
 

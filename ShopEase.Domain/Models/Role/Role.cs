@@ -1,4 +1,4 @@
-﻿namespace ShopEase.Domain.Models
+﻿namespace ShopEase.Domain.Models.Role
 {
     public class Role : SortWithPageParameters
     {

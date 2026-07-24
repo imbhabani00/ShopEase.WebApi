@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using ShopEase.Application.DTOs.Response.Role;
 using ShopEase.Domain.Models;
+using ShopEase.Domain.Models.Role;
 using System.Data;
 
 namespace Ecommerce.Application.Repositories

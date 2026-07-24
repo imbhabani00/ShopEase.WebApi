@@ -1,4 +1,4 @@
-﻿namespace Ecommerce.Domain.Models
+﻿namespace ShopEase.Domain.Models.User
 {
     #region User
     public class User
@@ -38,7 +38,7 @@
     {
         public int? UserId { get; set; }
         public int? RoleId { get; set; }
-        public int CreatedBy { get; set; }
+        public string CreatedBy { get; set; }
         public int ModifiedBy { get; set; }
         public string FirstName { get; set; }
         public string MiddleName { get; set; }

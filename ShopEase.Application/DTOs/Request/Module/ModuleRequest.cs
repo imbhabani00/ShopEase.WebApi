@@ -1,4 +1,4 @@
-﻿namespace ShopEase.Application.DTOs.Request
+﻿namespace ShopEase.Application.DTOs.Request.Module
 {
     public class ModuleRequest
     {
