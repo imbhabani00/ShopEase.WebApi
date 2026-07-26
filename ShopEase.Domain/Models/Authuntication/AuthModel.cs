@@ -1,4 +1,4 @@
-﻿namespace Ecommerce.Domain.Models
+﻿namespace ShopEase.Domain.Models.Authuntication
 {
     public class AuthModel
     {
