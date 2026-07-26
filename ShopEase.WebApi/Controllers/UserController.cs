@@ -92,6 +92,27 @@ namespace Ecommerce.Api.Controllers
             return new ObjectResult(apiResponse);
         }
         #endregion
+
+        #region GetById
+        [HttpGet("id/{userId}")]
+        public async Task<IActionResult> GetById(int userId)
+        {
+            var apiResponse = new ApiResponse();
+            try
+            {
+                var response = await _userService.GetByIdAsync(userId);
+                apiResponse = response != null
+                    ? CreateSuccessResponse(response, HttpStatusCode.OK, "User retrieved successfully")
+                    : CreateFailedApiResponse(null, HttpStatusCode.NotFound, "User not found");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetById: Error retrieving user {UserId}", userId);
+            }
+            return new ObjectResult(apiResponse);
+        }
+        #endregion
+
         #region ChangePassword
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)

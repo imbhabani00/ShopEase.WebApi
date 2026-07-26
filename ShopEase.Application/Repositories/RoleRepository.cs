@@ -10,10 +10,12 @@ namespace Ecommerce.Application.Repositories
     #region Interface
     public interface IRoleRepository
     {
-        Task<RoleList> GetList(SortWithPageParameters sortWithPageParameters , int tenantId);
+        Task<RoleList> GetList(SortWithPageParameters sortWithPageParameters, int tenantId);
         Task<RoleResponse?> GetById(int roleId);
         Task<SaveResponse> Save(Role role, int tenantId, int userId);
         Task<SaveResponse> Delete(int roleId, int userId);
+        Task<PermissionList> GetByRoleAsync(int roleId);
+        Task<SaveResponse> SavePermissions(Permission permission);
     }
     #endregion
 
@@ -80,7 +82,7 @@ namespace Ecommerce.Application.Repositories
 
         #region Save
         public async Task<SaveResponse> Save(Role role, int tenantId, int userId)
-           {
+        {
             var response = new SaveResponse();
 
             using (var connection = CreateConnection())
@@ -126,7 +128,55 @@ namespace Ecommerce.Application.Repositories
                     commandType: CommandType.StoredProcedure);
                 response.ReturnValue = parameters.Get<int>("@ReturnValue");
             }
-            return response;    
+            return response;
+        }
+        #endregion
+
+        #region GetByRoleAsync
+        public async Task<PermissionList> GetByRoleAsync(int roleId)
+        {
+            var data = new PermissionList();
+            using (var connection = CreateConnection())
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@RoleId", roleId);
+
+                connection.Open();
+
+                var permissions = await connection.QueryAsync<Permission>(
+                    "[dbo].[Permission_GetByRole]",
+                    parameters,
+                    commandType: CommandType.StoredProcedure);
+
+                return data;
+            }
+        }
+        #endregion
+
+        #region SavePermissionsAsync
+        public async Task<SaveResponse> SavePermissions(Permission permission)
+        {
+            var response = new SaveResponse();
+            using (var connection = CreateConnection())
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@RoleId", permission.RoleId);
+                parameters.Add("@ModuleId", permission.ModuleId);
+                parameters.Add("@CanView", permission.CanView);
+                parameters.Add("@CanAdd", permission.CanAdd);
+                parameters.Add("@CanEdit", permission.CanEdit);
+                parameters.Add("@CanDelete", permission.CanDelete);
+                parameters.Add("@CanInactive", permission.CanInactive);
+
+                connection.Open();
+
+                var result = await connection.ExecuteAsync(
+                    "[dbo].[Permission_Save]",
+                    parameters,
+                    commandType: CommandType.StoredProcedure);
+
+                return response;
+            }
         }
         #endregion
     }

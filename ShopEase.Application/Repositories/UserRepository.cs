@@ -79,7 +79,9 @@ namespace Ecommerce.Application.Repositories
                 parameters.Add("@UserId", userId);
                 parameters.Add("@ReturnValue", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
                 connection.Open();
-                var result = await connection.QueryMultipleAsync("", parameters, commandType: CommandType.StoredProcedure);
+                var result = await connection.QueryMultipleAsync("[dbo].[Users_GetList]",
+                    parameters,
+                    commandType: CommandType.StoredProcedure);
                 var user = await result.ReadFirstOrDefaultAsync<UserGet>();
                 var returnValue = parameters.Get<int>("@ReturnValue");
                 return user;
