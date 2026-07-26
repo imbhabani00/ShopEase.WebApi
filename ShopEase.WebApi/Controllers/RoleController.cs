@@ -3,6 +3,7 @@ using Ecommerce.Api.Helper;
 using Ecommerce.Application.DTOs.Response;
 using Ecommerce.Application.Services;
 using Microsoft.AspNetCore.Mvc;
+using ShopEase.Application.DTOs.Request;
 using ShopEase.Application.DTOs.Request.Role;
 using ShopEase.Domain.Models;
 using System.Net;
@@ -144,6 +145,51 @@ namespace Ecommerce.Api.Controllers
                 apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError, "Failed to delete role");
             }
             return new ObjectResult(apiResponse);
+        }
+        #endregion
+
+        #region GetByRole
+        [HttpGet("by-role/{roleId}")]
+        public async Task<IActionResult> GetByRole(int roleId)
+        {
+            try
+            {
+                var permissions = await _roleService.GetByRoleAsync(roleId);
+
+                var apiResponse = CreateSuccessResponse(permissions, HttpStatusCode.OK, "Permissions retrieved successfully");
+                return new ObjectResult(apiResponse);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetByRole: Error retrieving permissions for role {RoleId}", roleId);
+                var apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError, "Failed to retrieve permissions");
+                return new ObjectResult(apiResponse);
+            }
+        }
+        #endregion
+
+        #region PermissionSave
+        [HttpPost("permission-save")]
+        public async Task<IActionResult> PermissionSave([FromBody] PermissionRequest request)
+        {
+            try
+            {
+                if (request.RoleId <= 0 || request.ModuleId <= 0)
+                {
+                    var validationError = CreateFailedApiResponse(null, HttpStatusCode.BadRequest, "Invalid role or module");
+                    return new ObjectResult(validationError);
+                }
+
+                var apiResponse = await _roleService.SavePermissionsAsync(request);
+
+                return new ObjectResult(apiResponse);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Save: Error saving permission");
+                var apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError, "Failed to save permission");
+                return new ObjectResult(apiResponse);
+            }
         }
         #endregion
     }

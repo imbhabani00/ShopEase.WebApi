@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
+using Ecommerce.Application.DTOs.Response;
 using Ecommerce.Application.Repositories;
+using ShopEase.Application.DTOs.Request;
 using ShopEase.Application.DTOs.Request.Role;
 using ShopEase.Application.DTOs.Response;
+using ShopEase.Application.DTOs.Response.Permission;
 using ShopEase.Application.DTOs.Response.Role;
 using ShopEase.Domain.Models;
 using ShopEase.Domain.Models.Role;
@@ -15,6 +18,8 @@ namespace Ecommerce.Application.Services
         Task<RoleResponse?> GetByIdAsync(int roleId);
         Task<GenericSaveResponse> SaveAsync(RoleRequest roleRequest, int tenantId, int userId);
         Task<GenericSaveResponse> DeleteAsync(int roleId, int userId);
+        Task<PermissionResponseList> GetByRoleAsync(int roleId);
+        Task<ApiResponse> SavePermissionsAsync(PermissionRequest permissionRequest);
     }
     #endregion
 
@@ -69,8 +74,28 @@ namespace Ecommerce.Application.Services
         public async Task<GenericSaveResponse> DeleteAsync(int roleId, int userId)
         {
             var request = await _roleRepository.Delete(roleId, userId);
-            var response =  _mapper.Map<SaveResponse,GenericSaveResponse>(request);
+            var response = _mapper.Map<SaveResponse, GenericSaveResponse>(request);
             return response;
+        }
+        #endregion
+
+        #region GetByRoleAsync
+        public async Task<PermissionResponseList> GetByRoleAsync(int roleId)
+        {
+            var request = await _roleRepository.GetByRoleAsync(roleId);
+            var response = _mapper.Map<PermissionList, PermissionResponseList>(request);
+            return response;
+        }
+        #endregion
+
+        #region SaveAsync
+        public async Task<ApiResponse> SavePermissionsAsync(PermissionRequest permissionRequest)
+        {
+            var request = _mapper.Map<PermissionRequest, Permission>(permissionRequest);
+            var response = await _roleRepository.SavePermissions(request);
+            var result = _mapper.Map<SaveResponse, ApiResponse>(response);
+            return result;
+
         }
         #endregion
     }

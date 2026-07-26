@@ -12,4 +12,10 @@
         public bool CanEdit { get; set; }
         public bool CanDelete { get; set; }
     }
+
+    public class PermissionResponseList
+    {
+        public List<PermissionResponse> permissions { get; set; }
+        public int ReturnValue { get; set; }
+    }
 }
