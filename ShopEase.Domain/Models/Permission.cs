@@ -19,5 +19,6 @@
     {
         public List<Permission> permissions { get; set; }
         public int ReturnValue { get; set; }
+        public int TotalCount { get; set; }
     }
 }

@@ -19,7 +19,7 @@ namespace Ecommerce.Application.Services
         Task<GenericSaveResponse> SaveAsync(RoleRequest roleRequest, int tenantId, int userId);
         Task<GenericSaveResponse> DeleteAsync(int roleId, int userId);
         Task<PermissionResponseList> GetByRoleAsync(int roleId);
-        Task<ApiResponse> SavePermissionsAsync(PermissionRequest permissionRequest);
+        Task<ApiResponse> SavePermissionsAsync(List<PermissionRequest> permissionRequests);
     }
     #endregion
 
@@ -88,14 +88,20 @@ namespace Ecommerce.Application.Services
         }
         #endregion
 
-        #region SaveAsync
-        public async Task<ApiResponse> SavePermissionsAsync(PermissionRequest permissionRequest)
+        #region SavePermissionsAsync
+        public async Task<ApiResponse> SavePermissionsAsync(List<PermissionRequest> permissionRequests)
         {
-            var request = _mapper.Map<PermissionRequest, Permission>(permissionRequest);
-            var response = await _roleRepository.SavePermissions(request);
-            var result = _mapper.Map<SaveResponse, ApiResponse>(response);
-            return result;
+            foreach (var item in permissionRequests)
+            {
+                var request = _mapper.Map<PermissionRequest, Permission>(item);
+                await _roleRepository.SavePermissions(request);
+            }
 
+            return new ApiResponse
+            {
+                Status = true,
+                Message = "Permissions saved successfully"
+            };
         }
         #endregion
     }

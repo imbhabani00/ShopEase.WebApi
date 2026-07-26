@@ -143,11 +143,13 @@ namespace Ecommerce.Application.Repositories
 
                 connection.Open();
 
-                var permissions = await connection.QueryAsync<Permission>(
+                var result = await connection.QueryMultipleAsync(
                     "[dbo].[Permission_GetByRole]",
                     parameters,
                     commandType: CommandType.StoredProcedure);
 
+                data.permissions = result.Read<Permission>().ToList();
+                data.TotalCount = result.ReadFirstOrDefault<int>();
                 return data;
             }
         }
