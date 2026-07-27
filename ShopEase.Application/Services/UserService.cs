@@ -13,7 +13,7 @@ namespace Ecommerce.Service
     public interface IUserService
     {
         Task<UserGetResponse?> AuthenticateAsync(string email, string password);
-        Task<UserResponse?> GetByIdAsync(int userId);
+        Task<UsersResponse> GetByIdAsync(int userId, int tenantId);
         Task UpdateRefreshTokenAsync(int userId, string refreshToken, DateTime refreshTokenExpiry);
         Task<GenericSaveResponse> SaveAsync(UserRequest userRequest, int tenantId, int loggedInUserId);
         Task<UsersResponseList> GetListAsync(SortWithPageParameters sortWithPageParameters, int tenantId);
@@ -54,10 +54,11 @@ namespace Ecommerce.Service
         #endregion
 
         #region GetByIdAsync
-        public async Task<UserResponse?> GetByIdAsync(int userId)
+        public async Task<UsersResponse?> GetByIdAsync(int userId, int tenantId)
         {
-            var userEntity = await _userRepository.GetById(userId);
-            return _mapper.Map<UserGet, UserResponse>(userEntity);
+            var request = await _userRepository.GetById(userId, tenantId);
+            var response = _mapper.Map<Users, UsersResponse>(request);
+            return response;
         }
         #endregion
 

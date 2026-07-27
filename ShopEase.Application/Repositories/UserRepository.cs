@@ -11,7 +11,7 @@ namespace Ecommerce.Application.Repositories
     public interface IUserRepository
     {
         Task<UserGet?> Authenticate(string email, string password);
-        Task<UserGet?> GetById(int userId);
+        Task<Users> GetById(int userId , int tenantId);
         Task UpdateRefreshToken(int userId, string refreshToken, DateTime refreshTokenExpiry);
         Task<SaveResponse> Save(UserRequest userRequest, int tenantId, int loggedInUserId);
         Task<UsersList> GetList(SortWithPageParameters sortWithPageParameters, int tenantId);
@@ -71,20 +71,19 @@ namespace Ecommerce.Application.Repositories
         #endregion
 
         #region GetById
-        public async Task<UserGet?> GetById(int userId)
+        public async Task<Users> GetById(int userId , int tenantId)
         {
             using (var connection = CreateConnection())
             {
                 var parameters = new DynamicParameters();
                 parameters.Add("@UserId", userId);
+                parameters.Add("@TenantId", tenantId);
                 parameters.Add("@ReturnValue", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
                 connection.Open();
-                var result = await connection.QueryMultipleAsync("[dbo].[Users_GetList]",
+                var result = await connection.QueryFirstOrDefaultAsync<Users>("[dbo].[Users_GetById]",
                     parameters,
                     commandType: CommandType.StoredProcedure);
-                var user = await result.ReadFirstOrDefaultAsync<UserGet>();
-                var returnValue = parameters.Get<int>("@ReturnValue");
-                return user;
+                return result;
             }
         }
         #endregion
@@ -114,7 +113,7 @@ namespace Ecommerce.Application.Repositories
                 response.ReturnValue = parameters.Get<int>("@ReturnValue");
                 if (response.ReturnValue == 0)
                 {
-                    response.NewId = parameters.Get<int>("@NewUserId");
+                    response.NewId = parameters.Get<int?>("@NewUserId");
                 }
             }
             return response;

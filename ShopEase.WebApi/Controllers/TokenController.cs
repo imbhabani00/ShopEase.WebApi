@@ -127,8 +127,9 @@ namespace Ecommerce.Api.Controllers
             {
                 var principal = _tokenService.GetPrincipalFromExpiredToken(model.AccessToken);
                 var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var tenantIdClaim = principal.FindFirst("TenantId")?.Value;
 
-                if (!int.TryParse(userIdClaim, out var userId))
+                if (!int.TryParse(userIdClaim, out var userId) || !int.TryParse(tenantIdClaim, out var tenantId))
                 {
                     return Unauthorized(new ApiResponse
                     {
@@ -139,7 +140,7 @@ namespace Ecommerce.Api.Controllers
                     });
                 }
 
-                var user = await _userService.GetByIdAsync(userId);
+                var user = await _userService.GetByIdAsync(userId , tenantId);
                 if (user == null || user.RefreshToken != model.RefreshToken)
                 {
                     return Unauthorized(new ApiResponse
@@ -156,7 +157,7 @@ namespace Ecommerce.Api.Controllers
                 var newRefreshToken = _tokenService.GenerateRefreshToken();
                 var refreshTokenExpiry = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpiryDays);
 
-                await _userService.UpdateRefreshTokenAsync(user.UserId, newRefreshToken,refreshTokenExpiry);
+                await _userService.UpdateRefreshTokenAsync(user.UserId.Value, newRefreshToken,refreshTokenExpiry);
 
                 return Ok(new ApiResponse
                 {

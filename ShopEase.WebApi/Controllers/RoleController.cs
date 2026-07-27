@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using ShopEase.Application.DTOs.Request;
 using ShopEase.Application.DTOs.Request.Role;
 using ShopEase.Domain.Models;
-using System.Linq.Expressions;
 using System.Net;
 
 namespace Ecommerce.Api.Controllers
