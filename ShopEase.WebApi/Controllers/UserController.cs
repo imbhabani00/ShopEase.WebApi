@@ -67,7 +67,7 @@ namespace Ecommerce.Api.Controllers
                 {
                     case 0:
                         apiResponse = CreateSuccessResponse(response.NewId, HttpStatusCode.OK,
-                            response.NewId > 0 ? "User saved successful." : "User failed to save.");
+                            response.NewId > 0 ? "User saved successfully." : "User updated successfully.");
                         break;
                     case 1:
                         apiResponse = CreateFailedApiResponse(null, HttpStatusCode.Conflict,
@@ -100,7 +100,8 @@ namespace Ecommerce.Api.Controllers
             var apiResponse = new ApiResponse();
             try
             {
-                var response = await _userService.GetByIdAsync(userId);
+                var tenantId = User.GetTenantId();
+                var response = await _userService.GetByIdAsync(userId, tenantId);
                 apiResponse = response != null
                     ? CreateSuccessResponse(response, HttpStatusCode.OK, "User retrieved successfully")
                     : CreateFailedApiResponse(null, HttpStatusCode.NotFound, "User not found");
