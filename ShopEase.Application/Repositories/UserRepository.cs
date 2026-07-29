@@ -11,11 +11,15 @@ namespace Ecommerce.Application.Repositories
     public interface IUserRepository
     {
         Task<UserGet?> Authenticate(string email, string password);
-        Task<Users> GetById(int userId , int tenantId);
+        Task<Users> GetById(int userId, int tenantId);
         Task UpdateRefreshToken(int userId, string refreshToken, DateTime refreshTokenExpiry);
         Task<SaveResponse> Save(UserRequest userRequest, int tenantId, int loggedInUserId);
         Task<UsersList> GetList(SortWithPageParameters sortWithPageParameters, int tenantId);
         Task<SaveResponse> ChangePassword(int userId, string passwordHash);
+        Task<RemovedProfilePicture?> RemoveProfilePicture(int userId, int tenantId, int modifiedBy);
+        Task UpdateProfilePicture(int userId, int tenantId, string fileName, string s3Key, int modifiedBy);
+        Task<SaveResponse> Delete(int roleId, int userId);
+        Task<SaveResponse> ActiveInactive(int userId, bool isActive);
     }
     #endregion
 
@@ -71,7 +75,7 @@ namespace Ecommerce.Application.Repositories
         #endregion
 
         #region GetById
-        public async Task<Users> GetById(int userId , int tenantId)
+        public async Task<Users> GetById(int userId, int tenantId)
         {
             using (var connection = CreateConnection())
             {
@@ -151,6 +155,48 @@ namespace Ecommerce.Application.Repositories
         }
         #endregion
 
+        #region Delete
+        public async Task<SaveResponse> Delete(int roleId, int userId)
+        {
+            var response = new SaveResponse();
+            using (var connection = CreateConnection())
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@RoleId", roleId);
+                parameters.Add("@UserId ", userId);
+                parameters.Add("@ReturnValue", dbType: DbType.Int32, direction: ParameterDirection.Output);
+                connection.Open();
+                await connection.ExecuteAsync(
+                    "[dbo].[User_Delete]",
+                    parameters,
+                    commandType: CommandType.StoredProcedure);
+                response.ReturnValue = parameters.Get<int>("@ReturnValue");
+            }
+            return response;
+        }
+        #endregion
+
+        #region ActiveInactive
+        public async Task<SaveResponse> ActiveInactive(int userId , bool isActive)
+        {
+            var response = new SaveResponse();
+            using (var connection = CreateConnection())
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@UserId ", userId);
+                parameters.Add("@IsActive", isActive);
+                parameters.Add("@ReturnValue", dbType: DbType.Int32, direction: ParameterDirection.Output);
+                connection.Open();
+                await connection.ExecuteAsync(
+                    "[dbo].[User_Status_Update]",
+                    parameters,
+                    commandType: CommandType.StoredProcedure);
+                response.ReturnValue = parameters.Get<int>("@ReturnValue");
+            }
+            return response;
+        }
+        #endregion
+
         #region ChangePassword
         public async Task<SaveResponse> ChangePassword(int userId, string passwordHash)
         {
@@ -172,6 +218,47 @@ namespace Ecommerce.Application.Repositories
             }
 
             return response;
+        }
+        #endregion
+
+        #region UpdateProfilePicture
+        public async Task UpdateProfilePicture(int userId, int tenantId, string fileName, string s3Key, int modifiedBy)
+        {
+            using (var connection = CreateConnection())
+            {
+
+                var parameters = new DynamicParameters();
+                parameters.Add("@UserId", userId);
+                parameters.Add("@TenantId", tenantId);
+                parameters.Add("@ProfilePictureName", fileName);
+                parameters.Add("@ProfilePicturePath", s3Key);
+                parameters.Add("@ModifiedBy", modifiedBy);
+
+                await connection.ExecuteAsync(
+                    "[dbo].[Users_UpdateProfilePicture]",
+                    parameters,
+                    commandType: CommandType.StoredProcedure);
+            }
+        }
+        #endregion
+
+        #region RemoveProfilePicture
+        public async Task<RemovedProfilePicture?> RemoveProfilePicture(int userId, int tenantId, int modifiedBy)
+        {
+            using (var connection = CreateConnection())
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@UserId", userId);
+                parameters.Add("@TenantId", tenantId);
+                parameters.Add("@ModifiedBy", modifiedBy);
+
+                var result = await connection.QueryFirstOrDefaultAsync<RemovedProfilePicture>(
+                    "[dbo].[Users_RemoveProfilePicture]",
+                    parameters,
+                    commandType: CommandType.StoredProcedure);
+
+                return result;
+            }
         }
         #endregion
     }

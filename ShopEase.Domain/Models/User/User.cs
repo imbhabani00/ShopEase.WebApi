@@ -71,4 +71,10 @@
         public int ReturnValue { get; set; }
     }
     #endregion
+
+    public class RemovedProfilePicture
+    {
+        public string? OldProfilePictureName { get; set; }
+        public string? OldProfilePicturePath { get; set; }
+    }
 }
