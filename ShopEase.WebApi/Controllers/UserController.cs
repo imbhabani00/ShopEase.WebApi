@@ -114,6 +114,72 @@ namespace Ecommerce.Api.Controllers
         }
         #endregion
 
+        #region Delete
+        [HttpDelete("delete/{userId}")]
+        public async Task<IActionResult> Delete(int userId)
+        {
+            var apiResponse = new ApiResponse();
+            try
+            {
+                var loggedInUserId = User.GetUserId()?.GetHashCode() ?? 0;
+                var response = await _userService.DeleteAsync(userId, userId);
+                apiResponse = response.ReturnValue == 1
+                    ? CreateSuccessResponse(response, HttpStatusCode.OK, "Role deleted successfully")
+                    : CreateFailedApiResponse(null, HttpStatusCode.BadRequest, "Failed to delete role");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Delete: Error deleting role {UserId}", userId);
+                apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError, "Failed to delete user");
+            }
+            return new ObjectResult(apiResponse);
+        }
+        #endregion
+
+        #region ActiveInactive
+
+        [HttpPut("active-inactive")]
+        public async Task<IActionResult> ActiveInactive(int userId, bool isActive)
+        {
+            var apiResponse = new ApiResponse();
+
+            try
+            {
+                var response = await _userService.ActiveInactiveAsync(userId, isActive);
+
+                if (response.ReturnValue == 1)
+                {
+                    string message = isActive
+                        ? "User activated successfully"
+                        : "User inactivated successfully";
+
+                    apiResponse = CreateSuccessResponse(response, HttpStatusCode.OK, message);
+                }
+                else
+                {
+                    apiResponse = CreateFailedApiResponse(
+                        null,
+                        HttpStatusCode.BadRequest,
+                        "Failed to update user status"
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "ActiveInactive: Error updating user status {UserId}", userId);
+
+                apiResponse = CreateFailedApiResponse(
+                    null,
+                    HttpStatusCode.InternalServerError,
+                    "Failed to update user status"
+                );
+            }
+
+            return new ObjectResult(apiResponse);
+        }
+
+        #endregion
+
         #region ChangePassword
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
@@ -129,6 +195,119 @@ namespace Ecommerce.Api.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "ChangePassword error");
+                apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError, "An error occurred.");
+            }
+            return new ObjectResult(apiResponse);
+        }
+        #endregion
+
+        # region UploadProfilePicture
+
+        [HttpPost("upload-profile-picture")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadProfilePicture([FromForm] UploadProfilePictureRequest request)
+        {
+            var apiResponse = new ApiResponse();
+
+            try
+            {
+                var file = request.File;
+
+                if (file == null || file.Length == 0)
+                {
+                    apiResponse = CreateFailedApiResponse(
+                        null,
+                        HttpStatusCode.BadRequest,
+                        "No file was uploaded."
+                    );
+
+                    return new ObjectResult(apiResponse);
+                }
+
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+                var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+                if (!allowedExtensions.Contains(extension))
+                {
+                    apiResponse = CreateFailedApiResponse(
+                        null,
+                        HttpStatusCode.BadRequest,
+                        "Only JPG, PNG, or WEBP images are allowed."
+                    );
+
+                    return new ObjectResult(apiResponse);
+                }
+
+                const long maxSizeBytes = 2 * 1024 * 1024;
+
+                if (file.Length > maxSizeBytes)
+                {
+                    apiResponse = CreateFailedApiResponse(
+                        null,
+                        HttpStatusCode.BadRequest,
+                        "Image must be smaller than 2 MB."
+                    );
+
+                    return new ObjectResult(apiResponse);
+                }
+
+                var userId = User.GetUserId() ?? 0;
+                var tenantId = User.GetTenantId();
+
+                var response = await _userService.UploadProfilePictureAsync(
+                    userId,
+                    tenantId,
+                    file,
+                    userId
+                );
+
+                apiResponse = response != null
+                    ? CreateSuccessResponse(
+                        response,
+                        HttpStatusCode.OK,
+                        "Profile picture updated successfully."
+                      )
+                    : CreateFailedApiResponse(
+                        null,
+                        HttpStatusCode.InternalServerError,
+                        "Failed to update profile picture."
+                      );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "UploadProfilePicture error");
+
+                apiResponse = CreateFailedApiResponse(
+                    null,
+                    HttpStatusCode.InternalServerError,
+                    "An error occurred."
+                );
+            }
+
+            return new ObjectResult(apiResponse);
+        }
+
+        #endregion  
+
+        #region RemoveProfilePicture
+        [HttpPost("remove-profile-picture")]
+        public async Task<IActionResult> RemoveProfilePicture()
+        {
+            var apiResponse = new ApiResponse();
+            try
+            {
+                var userId = User.GetUserId() ?? 0;
+                var tenantId = User.GetTenantId();
+
+                var result = await _userService.RemoveProfilePictureAsync(userId, tenantId, userId);
+
+                apiResponse = result
+                    ? CreateSuccessResponse(result, HttpStatusCode.OK, "Profile picture removed successfully.")
+                    : CreateFailedApiResponse(null, HttpStatusCode.BadRequest, "Failed to remove profile picture.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "RemoveProfilePicture error");
                 apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError, "An error occurred.");
             }
             return new ObjectResult(apiResponse);

@@ -20,6 +20,7 @@ namespace Ecommerce.Application.Services
         Task<GenericSaveResponse> DeleteAsync(int roleId, int userId);
         Task<PermissionResponseList> GetByRoleAsync(int roleId);
         Task<ApiResponse> SavePermissionsAsync(List<PermissionRequest> permissionRequests);
+        Task<GenericSaveResponse> ActiveInactiveAsync(int roleId, bool isActive);
     }
     #endregion
 
@@ -74,6 +75,15 @@ namespace Ecommerce.Application.Services
         public async Task<GenericSaveResponse> DeleteAsync(int roleId, int userId)
         {
             var request = await _roleRepository.Delete(roleId, userId);
+            var response = _mapper.Map<SaveResponse, GenericSaveResponse>(request);
+            return response;
+        }
+        #endregion
+
+        #region ActiveInactive
+        public async Task<GenericSaveResponse> ActiveInactiveAsync(int roleId, bool isActive)
+        {
+            var request = await _roleRepository.ActiveInactive(roleId, isActive);
             var response = _mapper.Map<SaveResponse, GenericSaveResponse>(request);
             return response;
         }
