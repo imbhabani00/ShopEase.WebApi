@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using ShopEase.Application.DTOs.Request;
 using ShopEase.Application.DTOs.Request.Role;
 using ShopEase.Domain.Models;
-using System.Linq.Expressions;
 using System.Net;
 
 namespace Ecommerce.Api.Controllers
@@ -149,6 +148,50 @@ namespace Ecommerce.Api.Controllers
         }
         #endregion
 
+        #region ActiveInactive
+
+        [HttpPut("active-inactive")]
+        public async Task<IActionResult> ActiveInactive(int roleId, bool isActive)
+        {
+            var apiResponse = new ApiResponse();
+
+            try
+            {
+                var response = await _roleService.ActiveInactiveAsync(roleId, isActive);
+
+                if (response.ReturnValue == 1)
+                {
+                    string message = isActive
+                        ? "Role activated successfully"
+                        : "Role inactivated successfully";
+
+                    apiResponse = CreateSuccessResponse(response, HttpStatusCode.OK, message);
+                }
+                else
+                {
+                    apiResponse = CreateFailedApiResponse(
+                        null,
+                        HttpStatusCode.BadRequest,
+                        "Failed to update role status"
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "ActiveInactive: Error updating role status {Roleid}", roleId);
+
+                apiResponse = CreateFailedApiResponse(
+                    null,
+                    HttpStatusCode.InternalServerError,
+                    "Failed to update role status"
+                );
+            }
+
+            return new ObjectResult(apiResponse);
+        }
+
+        #endregion
+
         #region GetByRole
         [HttpGet("by-role/{roleId}")]
         public async Task<IActionResult> GetByRole(int roleId)
@@ -167,6 +210,8 @@ namespace Ecommerce.Api.Controllers
             return new ObjectResult(apiResponse);
         }
         #endregion
+
+        #region PermissionSave
 
         [HttpPost("permission-save")]
         public async Task<IActionResult> PermissionSave([FromBody] List<PermissionRequest> request)
@@ -190,5 +235,6 @@ namespace Ecommerce.Api.Controllers
             }
             return new ObjectResult(apiResponse);
         }
+        #endregion
     }
 }

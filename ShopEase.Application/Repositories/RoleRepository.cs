@@ -16,6 +16,7 @@ namespace Ecommerce.Application.Repositories
         Task<SaveResponse> Delete(int roleId, int userId);
         Task<PermissionList> GetByRoleAsync(int roleId);
         Task<SaveResponse> SavePermissions(Permission permission);
+        Task<SaveResponse> ActiveInactive(int roleId, bool isActive);
     }
     #endregion
 
@@ -124,6 +125,27 @@ namespace Ecommerce.Application.Repositories
                 connection.Open();
                 await connection.ExecuteAsync(
                     "[dbo].[Role_Delete]",
+                    parameters,
+                    commandType: CommandType.StoredProcedure);
+                response.ReturnValue = parameters.Get<int>("@ReturnValue");
+            }
+            return response;
+        }
+        #endregion
+
+        #region ActiveInactive
+        public async Task<SaveResponse> ActiveInactive(int roleId, bool isActive)
+        {
+            var response = new SaveResponse();
+            using (var connection = CreateConnection())
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@RoleId ", roleId);
+                parameters.Add("@IsActive", isActive);
+                parameters.Add("@ReturnValue", dbType: DbType.Int32, direction: ParameterDirection.Output);
+                connection.Open();
+                await connection.ExecuteAsync(
+                    "[dbo].[Role_Status_Update]",
                     parameters,
                     commandType: CommandType.StoredProcedure);
                 response.ReturnValue = parameters.Get<int>("@ReturnValue");

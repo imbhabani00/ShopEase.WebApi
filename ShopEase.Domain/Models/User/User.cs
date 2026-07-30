@@ -19,7 +19,7 @@
         public DateTime? RefreshTokenExpiry { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }
-        public DateTime? PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; }
         public DateTime? LastLoginDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
         public DateTime? DeletedDate { get; set; }
@@ -53,6 +53,12 @@
         public bool IsActive { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime ModifiedDate { get; set; }
+        public string? RefreshToken { get; set; }
+        public string? ProfilePictureName { get; set; }
+        public string? ProfilePicturePath { get; set; }
+        public string Initials { get; set; }
+        public string ColorCode { get; set; }
+        public string BackgroundColorCode { get; set; }
     }
     #endregion
 
@@ -65,4 +71,10 @@
         public int ReturnValue { get; set; }
     }
     #endregion
+
+    public class RemovedProfilePicture
+    {
+        public string? OldProfilePictureName { get; set; }
+        public string? OldProfilePicturePath { get; set; }
+    }
 }

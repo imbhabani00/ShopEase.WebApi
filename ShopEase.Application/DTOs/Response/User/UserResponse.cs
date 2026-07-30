@@ -52,6 +52,13 @@
         public bool IsActive { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime ModifiedDate { get; set; }
+        public string? RefreshToken { get; set; }
+        public string? ProfilePictureName { get; set; }
+        public string? ProfilePicturePath { get; set; }
+        public string Initials { get; set; }
+        public string ColorCode { get; set; }
+        public string BackgroundColorCode { get; set; }
+
     }
     #endregion
 
