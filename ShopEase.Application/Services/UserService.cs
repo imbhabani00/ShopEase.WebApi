@@ -22,8 +22,9 @@ namespace Ecommerce.Service
         Task<GenericSaveResponse> ChangePasswordAsync(int userId, string passwordHash);
         Task<string?> UploadProfilePictureAsync(int userId, int tenantId, IFormFile file, int modifiedBy);
         Task<bool> RemoveProfilePictureAsync(int userId, int tenantId, int modifiedBy);
-        Task<GenericSaveResponse> DeleteAsync(int roleId, int userId);
+        Task<GenericSaveResponse> DeleteAsync(int userId);
         Task<GenericSaveResponse> ActiveInactiveAsync(int userId, bool isActive);
+        Task<UserGetResponse?> AuthenticateGoogleAsync(string email);
 
     }
     #endregion
@@ -101,9 +102,9 @@ namespace Ecommerce.Service
         #endregion
 
         #region DeleteAsync
-        public async Task<GenericSaveResponse> DeleteAsync(int roleId, int userId)
+        public async Task<GenericSaveResponse> DeleteAsync(int userId)
         {
-            var request = await _userRepository.Delete(roleId, userId);
+            var request = await _userRepository.Delete(userId);
             var response = _mapper.Map<SaveResponse, GenericSaveResponse>(request);
             return response;
         }
@@ -157,6 +158,15 @@ namespace Ecommerce.Service
             await _s3Service.DeleteDocumentAsync(oldPicture.OldProfilePicturePath);
 
             return true;
+        }
+        #endregion
+
+        #region AuthenticateGoogleAsync
+        public async Task<UserGetResponse?> AuthenticateGoogleAsync(string email)
+        {
+            var request = await _userRepository.AuthenticateGoogle(email);
+            var response = _mapper.Map<UserGet, UserGetResponse>(request);
+            return response;
         }
         #endregion
     }

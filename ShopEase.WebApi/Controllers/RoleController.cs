@@ -151,13 +151,13 @@ namespace Ecommerce.Api.Controllers
         #region ActiveInactive
 
         [HttpPut("active-inactive")]
-        public async Task<IActionResult> ActiveInactive(int roleid, bool isActive)
+        public async Task<IActionResult> ActiveInactive(int roleId, bool isActive)
         {
             var apiResponse = new ApiResponse();
 
             try
             {
-                var response = await _roleService.ActiveInactiveAsync(roleid, isActive);
+                var response = await _roleService.ActiveInactiveAsync(roleId, isActive);
 
                 if (response.ReturnValue == 1)
                 {
@@ -178,7 +178,7 @@ namespace Ecommerce.Api.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "ActiveInactive: Error updating role status {Roleid}", roleid);
+                _logger.LogError(ex, "ActiveInactive: Error updating role status {Roleid}", roleId);
 
                 apiResponse = CreateFailedApiResponse(
                     null,

@@ -122,14 +122,14 @@ namespace Ecommerce.Api.Controllers
             try
             {
                 var loggedInUserId = User.GetUserId()?.GetHashCode() ?? 0;
-                var response = await _userService.DeleteAsync(userId, userId);
+                var response = await _userService.DeleteAsync(userId);
                 apiResponse = response.ReturnValue == 1
-                    ? CreateSuccessResponse(response, HttpStatusCode.OK, "Role deleted successfully")
-                    : CreateFailedApiResponse(null, HttpStatusCode.BadRequest, "Failed to delete role");
+                    ? CreateSuccessResponse(response, HttpStatusCode.OK, "User deleted successfully.")
+                    : CreateFailedApiResponse(null, HttpStatusCode.BadRequest, "Failed to delete user.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Delete: Error deleting role {UserId}", userId);
+                _logger.LogError(ex, "Delete: Error deleting user {UserId}", userId);
                 apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError, "Failed to delete user");
             }
             return new ObjectResult(apiResponse);
@@ -309,6 +309,39 @@ namespace Ecommerce.Api.Controllers
             {
                 _logger.LogError(ex, "RemoveProfilePicture error");
                 apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError, "An error occurred.");
+            }
+            return new ObjectResult(apiResponse);
+        }
+        #endregion
+
+        #region LoginGoogle
+        [HttpPost("login-google")]
+        public async Task<IActionResult> LoginGoogle([FromBody] GoogleLoginRequest request)
+        {
+            var apiResponse = new ApiResponse();
+            try
+            {
+                var result = await _userService.AuthenticateGoogleAsync(request.Email);
+
+                if (result == null || result.ReturnValue != 0 || result.User == null)
+                {
+                    apiResponse = CreateFailedApiResponse(
+                        null,
+                        HttpStatusCode.NotFound,
+                        "No account found for this Google email. Please register first."
+                    );
+                }
+                else
+                {
+                    // TODO: issue AccessToken/RefreshToken here the same way your
+                    // regular /accesstoken endpoint does, using result.User's claims
+                    apiResponse = CreateSuccessResponse(result, HttpStatusCode.OK, "Login successful");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "LoginGoogle: Error logging in via Google for {Email}", request.Email);
+                apiResponse = CreateFailedApiResponse(null, HttpStatusCode.InternalServerError, "Failed to log in with Google.");
             }
             return new ObjectResult(apiResponse);
         }

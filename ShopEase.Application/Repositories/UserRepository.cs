@@ -18,8 +18,10 @@ namespace Ecommerce.Application.Repositories
         Task<SaveResponse> ChangePassword(int userId, string passwordHash);
         Task<RemovedProfilePicture?> RemoveProfilePicture(int userId, int tenantId, int modifiedBy);
         Task UpdateProfilePicture(int userId, int tenantId, string fileName, string s3Key, int modifiedBy);
-        Task<SaveResponse> Delete(int roleId, int userId);
+        Task<SaveResponse> Delete(int userId);
         Task<SaveResponse> ActiveInactive(int userId, bool isActive);
+
+        Task<UserGet?> AuthenticateGoogle(string email);
     }
     #endregion
 
@@ -156,13 +158,12 @@ namespace Ecommerce.Application.Repositories
         #endregion
 
         #region Delete
-        public async Task<SaveResponse> Delete(int roleId, int userId)
+        public async Task<SaveResponse> Delete(int userId)
         {
             var response = new SaveResponse();
             using (var connection = CreateConnection())
             {
                 var parameters = new DynamicParameters();
-                parameters.Add("@RoleId", roleId);
                 parameters.Add("@UserId ", userId);
                 parameters.Add("@ReturnValue", dbType: DbType.Int32, direction: ParameterDirection.Output);
                 connection.Open();
@@ -259,6 +260,30 @@ namespace Ecommerce.Application.Repositories
 
                 return result;
             }
+        }
+        #endregion
+
+        #region AuthenticateGoogle
+        public async Task<UserGet?> AuthenticateGoogle(string email)
+        {
+            var data = new UserGet();
+            using (var connection = CreateConnection())
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@Email", email);
+                parameters.Add("@ReturnValue", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
+
+                connection.Open();
+                var result = await connection.QueryMultipleAsync(
+                    "[dbo].[User_AuthenticateGoogle]",
+                    parameters,
+                    commandType: CommandType.StoredProcedure);
+
+                data.User = await result.ReadFirstOrDefaultAsync<User>();
+                data.ReturnValue = parameters.Get<int>("@ReturnValue");
+                connection.Close();
+            }
+            return data;
         }
         #endregion
     }
