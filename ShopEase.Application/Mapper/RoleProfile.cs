@@ -1,8 +1,11 @@
 ﻿using AutoMapper;
 using ShopEase.Application.DTOs.Request;
+using ShopEase.Application.DTOs.Request.Role;
 using ShopEase.Application.DTOs.Response;
+using ShopEase.Application.DTOs.Response.Permission;
 using ShopEase.Application.DTOs.Response.Role;
 using ShopEase.Domain.Models;
+using ShopEase.Domain.Models.Role;
 
 namespace ShopEase.Application.Mapper
 {
@@ -14,6 +17,9 @@ namespace ShopEase.Application.Mapper
             CreateMap<RoleList, RoleResponseList>();
             CreateMap<RoleRequest, Role>();
             CreateMap<SaveResponse, GenericSaveResponse>();
+            CreateMap<PermissionRequest, Permission>();
+            CreateMap<Permission, PermissionResponse>();
+            CreateMap<PermissionList, PermissionResponseList>();
         }
     }
 }

@@ -1,5 +1,5 @@
-﻿using Ecommerce.Domain.Models;
-using FluentValidation;
+﻿using FluentValidation;
+using ShopEase.Domain.Models.Authuntication;
 
 namespace ShopEase.Application.Validators
 {

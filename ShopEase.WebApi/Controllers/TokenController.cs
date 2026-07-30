@@ -7,6 +7,7 @@ using Ecommerce.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using ShopEase.Domain.Models.Authuntication;
 using System.Net;
 using System.Security.Claims;
 
@@ -83,6 +84,7 @@ namespace Ecommerce.Api.Controllers
                     new Claim("RoleCode", result.User.RoleCode ?? "User"),
                     new Claim(ClaimTypes.Email, result.User.Email ?? string.Empty),
                     new Claim("TenantId", result.User.TenantId?.ToString() ?? ""),
+                    new Claim("ForcePasswordChange", result.User.ForcePasswordChange.ToString(), ClaimValueTypes.Boolean),
                     new Claim("jti", Guid.NewGuid().ToString())
 
                 };
@@ -102,7 +104,8 @@ namespace Ecommerce.Api.Controllers
                     UserId = result.User.UserId,
                     RoleCode = result.User.RoleCode,
                     RoleName = result.User.RoleName,
-                    RoleId = result.User.RoleId
+                    RoleId = result.User.RoleId,
+                    ForcePasswordChange = result.User.ForcePasswordChange
                 });
                 return new ObjectResult(apiResponse);
             }
@@ -124,8 +127,9 @@ namespace Ecommerce.Api.Controllers
             {
                 var principal = _tokenService.GetPrincipalFromExpiredToken(model.AccessToken);
                 var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var tenantIdClaim = principal.FindFirst("TenantId")?.Value;
 
-                if (!int.TryParse(userIdClaim, out var userId))
+                if (!int.TryParse(userIdClaim, out var userId) || !int.TryParse(tenantIdClaim, out var tenantId))
                 {
                     return Unauthorized(new ApiResponse
                     {
@@ -136,7 +140,7 @@ namespace Ecommerce.Api.Controllers
                     });
                 }
 
-                var user = await _userService.GetByIdAsync(userId);
+                var user = await _userService.GetByIdAsync(userId , tenantId);
                 if (user == null || user.RefreshToken != model.RefreshToken)
                 {
                     return Unauthorized(new ApiResponse
@@ -153,7 +157,7 @@ namespace Ecommerce.Api.Controllers
                 var newRefreshToken = _tokenService.GenerateRefreshToken();
                 var refreshTokenExpiry = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpiryDays);
 
-                await _userService.UpdateRefreshTokenAsync(user.UserId, newRefreshToken,refreshTokenExpiry);
+                await _userService.UpdateRefreshTokenAsync(user.UserId.Value, newRefreshToken,refreshTokenExpiry);
 
                 return Ok(new ApiResponse
                 {

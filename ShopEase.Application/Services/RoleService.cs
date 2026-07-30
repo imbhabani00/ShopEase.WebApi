@@ -1,22 +1,26 @@
-﻿using Amazon.Runtime;
-using AutoMapper;
+﻿using AutoMapper;
 using Ecommerce.Application.DTOs.Response;
 using Ecommerce.Application.Repositories;
-using Microsoft.Extensions.DependencyInjection;
 using ShopEase.Application.DTOs.Request;
+using ShopEase.Application.DTOs.Request.Role;
 using ShopEase.Application.DTOs.Response;
+using ShopEase.Application.DTOs.Response.Permission;
 using ShopEase.Application.DTOs.Response.Role;
 using ShopEase.Domain.Models;
+using ShopEase.Domain.Models.Role;
 
 namespace Ecommerce.Application.Services
 {
     #region IRoleService
     public interface IRoleService
     {
-        Task<RoleResponseList> GetAllAsync(SortWithPageParameters sortWithPageParameters, int tenantId);
+        Task<RoleResponseList> GetListAsync(SortWithPageParameters sortWithPageParameters, int tenantId);
         Task<RoleResponse?> GetByIdAsync(int roleId);
         Task<GenericSaveResponse> SaveAsync(RoleRequest roleRequest, int tenantId, int userId);
-        Task<ApiResponse> DeleteAsync(int roleId, int deletedBy);
+        Task<GenericSaveResponse> DeleteAsync(int roleId, int userId);
+        Task<PermissionResponseList> GetByRoleAsync(int roleId);
+        Task<ApiResponse> SavePermissionsAsync(List<PermissionRequest> permissionRequests);
+        Task<GenericSaveResponse> ActiveInactiveAsync(int roleId, bool isActive);
     }
     #endregion
 
@@ -37,12 +41,12 @@ namespace Ecommerce.Application.Services
         }
         #endregion
 
-        #region GetAllAsync
-        public async Task<RoleResponseList> GetAllAsync(
+        #region GetListAsync
+        public async Task<RoleResponseList> GetListAsync(
             SortWithPageParameters sortWithPageParameters,
             int tenantId)
         {
-            var request = await _roleRepository.GetAll(sortWithPageParameters, tenantId);
+            var request = await _roleRepository.GetList(sortWithPageParameters, tenantId);
             var response = _mapper.Map<RoleList, RoleResponseList>(request);
             return response;
         }
@@ -68,13 +72,46 @@ namespace Ecommerce.Application.Services
         #endregion
 
         #region DeleteAsync
-        public async Task<ApiResponse> DeleteAsync(
-            int roleId,
-            int deletedBy)
+        public async Task<GenericSaveResponse> DeleteAsync(int roleId, int userId)
         {
-            var response = await _roleRepository.Delete(roleId, deletedBy);
+            var request = await _roleRepository.Delete(roleId, userId);
+            var response = _mapper.Map<SaveResponse, GenericSaveResponse>(request);
+            return response;
+        }
+        #endregion
 
-            return _mapper.Map<ApiResponse>(response);
+        #region ActiveInactive
+        public async Task<GenericSaveResponse> ActiveInactiveAsync(int roleId, bool isActive)
+        {
+            var request = await _roleRepository.ActiveInactive(roleId, isActive);
+            var response = _mapper.Map<SaveResponse, GenericSaveResponse>(request);
+            return response;
+        }
+        #endregion
+
+        #region GetByRoleAsync
+        public async Task<PermissionResponseList> GetByRoleAsync(int roleId)
+        {
+            var request = await _roleRepository.GetByRoleAsync(roleId);
+            var response = _mapper.Map<PermissionList, PermissionResponseList>(request);
+            return response;
+        }
+        #endregion
+
+        #region SavePermissionsAsync
+        public async Task<ApiResponse> SavePermissionsAsync(List<PermissionRequest> permissionRequests)
+        {
+            foreach (var item in permissionRequests)
+            {
+                var request = _mapper.Map<PermissionRequest, Permission>(item);
+                await _roleRepository.SavePermissions(request);
+            }
+
+            return new ApiResponse
+            {
+                Status = true,
+                Message = "Permissions saved successfully"
+            };
         }
         #endregion
     }

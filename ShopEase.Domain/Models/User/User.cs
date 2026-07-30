@@ -1,7 +1,7 @@
-﻿namespace Ecommerce.Application.DTOs.Response.User
+﻿namespace ShopEase.Domain.Models.User
 {
-    #region UserResponse
-    public class UserResponse
+    #region User
+    public class User
     {
         public int UserId { get; set; }
         public string Email { get; set; } = string.Empty;
@@ -15,10 +15,11 @@
         public string? ModifiedBy { get; set; }
         public string? DeletedBy { get; set; }
         public string? PasswordChangedDate { get; set; }
+        public string? PasswordHash { get; set; }
         public DateTime? RefreshTokenExpiry { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }
-        public DateTime? PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; }
         public DateTime? LastLoginDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
         public DateTime? DeletedDate { get; set; }
@@ -27,16 +28,16 @@
     }
     #endregion
 
-    #region UserGetResponse
-    public class UserGetResponse
+    #region UserGet
+    public class UserGet
     {
-        public UserResponse? User { get; set; }
-        public int? ReturnValue { get; set; }
+        public User? User { get; set; }
+        public int ReturnValue { get; set; }
     }
     #endregion
 
-    #region UsersResponse
-    public class UsersResponse
+    #region Users
+    public class Users
     {
         public int? UserId { get; set; }
         public int? RoleId { get; set; }
@@ -58,16 +59,22 @@
         public string Initials { get; set; }
         public string ColorCode { get; set; }
         public string BackgroundColorCode { get; set; }
-
     }
     #endregion
 
-    #region UsersResponseList
-    public class UsersResponseList
+    #region UserList
+
+    public class UsersList
     {
-        public List<UsersResponse> UsersData { get; set; }
+        public List<Users> UsersData { get; set; }
         public int TotalCount { get; set; }
         public int ReturnValue { get; set; }
     }
     #endregion
+
+    public class RemovedProfilePicture
+    {
+        public string? OldProfilePictureName { get; set; }
+        public string? OldProfilePicturePath { get; set; }
+    }
 }
