@@ -1,6 +1,6 @@
-﻿namespace ShopEase.Domain.Models.Customer
+﻿namespace ShopEase.Application.DTOs.Response.Customer
 {
-    public class Customer
+    public class CustomerResponse
     {
         public int? UserId { get; set; }
         public string FirstName { get; set; }
@@ -10,9 +10,10 @@
         public string PhoneNumber { get; set; }
         public bool IsActive { get; set; }
     }
-    public class CustomerList
+
+    public class CustomerResponseList
     {
-        public List<Customer> Customers { get; set; }
+        public List<CustomerResponse> Customers { get; set; }
         public int TotalCount { get; set; }
         public int ReturnValue { get; set; }
     }
