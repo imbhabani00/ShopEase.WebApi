@@ -118,10 +118,10 @@ namespace Ecommerce.Api.Controllers
         }
         #endregion
 
-        #region Refresh
+        #region Refresh Token
         [HttpPost("refresh")]
         [AllowAnonymous]
-        public async Task<IActionResult> Refresh([FromBody] RefreshTokenModel model)
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenModel model)
         {
             try
             {
